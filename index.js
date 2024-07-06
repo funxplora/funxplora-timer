@@ -249,7 +249,10 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
               //   "https://admin.funxplora.com/api/insert-one-trx",
               //   fd
               // );
-              console.log(num,"This is number need to send to the sql procedure")
+              console.log(
+                num,
+                "This is number need to send to the sql procedure"
+              );
               pool.getConnection((err, con) => {
                 if (err) {
                   console.error("Error getting database connection: ", err);
@@ -368,7 +371,6 @@ const generatedTimeEveryAfterEveryThreeMinTRX = () => {
                   }
                 );
               });
-
             } catch (e) {
               console.log(e);
             }
@@ -457,13 +459,10 @@ const generatedTimeEveryAfterEveryFiveMinTRX = () => {
                 );
               });
 
-
               // const response = await axios.post(
               //   "https://admin.funxplora.com/api/insert-five-trx",
               //   fd
               // );
-
-
             } catch (e) {
               console.log(e);
             }
@@ -513,12 +512,13 @@ if (x) {
 }
 
 const finalRescheduleJob = schedule.scheduleJob(
-  "15,30,45,0 * * * *",
+  // "15,30,45,0 * * * *",
+  "30 * * * *",
   function () {
     twoMinTrxJob?.cancel();
     threeMinTrxJob?.cancel();
-      generatedTimeEveryAfterEveryThreeMinTRX();
-      generatedTimeEveryAfterEveryFiveMinTRX();
+    generatedTimeEveryAfterEveryThreeMinTRX();
+    generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
 
