@@ -377,11 +377,11 @@ const generatedTimeEveryAfterEveryFiveMinTRX = () => {
           );
           if (res?.data?.data[0]) {
             const obj = res.data.data[0];
-            const fd = new FormData();
-            fd.append("hash", `**${obj.hash.slice(-4)}`);
-            fd.append("digits", `${obj.hash.slice(-5)}`);
-            fd.append("number", obj.number);
-            fd.append("time", moment(time).format("HH:mm:ss"));
+            // const fd = new FormData();
+            // fd.append("hash", `**${obj.hash.slice(-4)}`);
+            // fd.append("digits", `${obj.hash.slice(-5)}`);
+            // fd.append("number", obj.number);
+            // fd.append("time", moment(time).format("HH:mm:ss"));
             const newString = obj.hash;
             let num = null;
             for (let i = newString.length - 1; i >= 0; i--) {
@@ -390,14 +390,48 @@ const generatedTimeEveryAfterEveryFiveMinTRX = () => {
                 break;
               }
             }
-            fd.append("slotid", num);
-            fd.append("overall", JSON.stringify(obj));
+            // fd.append("slotid", num);
+            // fd.append("overall", JSON.stringify(obj));
             //  trx 3
             try {
-              const response = await axios.post(
-                "https://admin.funxplora.com/api/insert-five-trx",
-                fd
-              );
+              pool.getConnection((err, con) => {
+                if (err) {
+                  console.error("Error getting database connection: ", err);
+                  return res.status(500).json({
+                    msg: `Something went wrong ${err}`,
+                  });
+                }
+                const query = `CALL sp_insert_trx_five_min_result(?, ?, ?, ?, ?, ?, ?)`;
+                con.query(
+                  query,
+                  [
+                    num,
+                    String(moment(time).format("HH:mm:ss")),
+                    1,
+                    `**${obj.hash.slice(-4)}`,
+                    JSON.stringify(obj),
+                    `${obj.hash.slice(-5)}`,
+                    obj.number,
+                  ],
+                  (err, resule) => {
+                    con?.release();
+                    if (err) {
+                      console.log(err);
+                      return res.status(500).json({
+                        msg: "Something went wrong related with databse",
+                      });
+                    }
+                  }
+                );
+              });
+
+
+              // const response = await axios.post(
+              //   "https://admin.funxplora.com/api/insert-five-trx",
+              //   fd
+              // );
+
+
             } catch (e) {
               console.log(e);
             }
