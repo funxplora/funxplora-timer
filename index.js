@@ -233,14 +233,14 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
             // fd.append("number", obj.number);
             // fd.append("time", moment(time).format("HH:mm:ss"));
 
-            // const newString = obj.hash;
-            // let num = null;
-            // for (let i = newString.length - 1; i >= 0; i--) {
-            //   if (!isNaN(parseInt(newString[i]))) {
-            //     num = parseInt(newString[i]);
-            //     break;
-            //   }
-            // }
+            const newString = obj.hash;
+            let num = null;
+            for (let i = newString.length - 1; i >= 0; i--) {
+              if (!isNaN(parseInt(newString[i]))) {
+                num = parseInt(newString[i]);
+                break;
+              }
+            }
             // fd.append("slotid", num);
             // fd.append("overall", JSON.stringify(obj));
             //  trx 1
@@ -249,6 +249,7 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
               //   "https://admin.funxplora.com/api/insert-one-trx",
               //   fd
               // );
+              console.log(num,"This is number need to send to the sql procedure")
               pool.getConnection((err, con) => {
                 if (err) {
                   console.error("Error getting database connection: ", err);
@@ -437,10 +438,10 @@ if (x) {
   );
   setTimeout(() => {
     // generatedTimeEveryAfterEveryOneMinForRollet()
-    // generatedTimeEveryAfterEveryOneMinTRX();
-    generatedTimeEveryAfterEveryOneMin();
-    generatedTimeEveryAfterEveryThreeMin();
-    generatedTimeEveryAfterEveryFiveMin();
+    generatedTimeEveryAfterEveryOneMinTRX();
+    // generatedTimeEveryAfterEveryOneMin();
+    // generatedTimeEveryAfterEveryThreeMin();
+    // generatedTimeEveryAfterEveryFiveMin();
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -450,8 +451,8 @@ const finalRescheduleJob = schedule.scheduleJob(
   function () {
     twoMinTrxJob?.cancel();
     threeMinTrxJob?.cancel();
-      generatedTimeEveryAfterEveryThreeMinTRX();
-      generatedTimeEveryAfterEveryFiveMinTRX();
+      // generatedTimeEveryAfterEveryThreeMinTRX();
+      // generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
 
