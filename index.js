@@ -88,7 +88,6 @@ const job = schedule.scheduleJob("30 0 * * *", async function () {
 let twoMinTrxJob;
 let threeMinTrxJob;
 
-
 // color prediction game time generated every 1 min
 function generatedTimeEveryAfterEveryOneMin() {
   const job = schedule.scheduleJob("* * * * * *", function () {
@@ -228,28 +227,58 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
           );
           if (res?.data?.data[0]) {
             const obj = res.data.data[0];
-            const fd = new FormData();
-            fd.append("hash", `**${obj.hash.slice(-4)}`);
-            fd.append("digits", `${obj.hash.slice(-5)}`);
-            fd.append("number", obj.number);
-            fd.append("time", moment(time).format("HH:mm:ss"));
+            // const fd = new FormData();
+            // fd.append("hash", `**${obj.hash.slice(-4)}`);
+            // fd.append("digits", `${obj.hash.slice(-5)}`);
+            // fd.append("number", obj.number);
+            // fd.append("time", moment(time).format("HH:mm:ss"));
 
-            const newString = obj.hash;
-            let num = null;
-            for (let i = newString.length - 1; i >= 0; i--) {
-              if (!isNaN(parseInt(newString[i]))) {
-                num = parseInt(newString[i]);
-                break;
-              }
-            }
-            fd.append("slotid", num);
-            fd.append("overall", JSON.stringify(obj));
+            // const newString = obj.hash;
+            // let num = null;
+            // for (let i = newString.length - 1; i >= 0; i--) {
+            //   if (!isNaN(parseInt(newString[i]))) {
+            //     num = parseInt(newString[i]);
+            //     break;
+            //   }
+            // }
+            // fd.append("slotid", num);
+            // fd.append("overall", JSON.stringify(obj));
             //  trx 1
             try {
-              const response = await axios.post(
-                "https://admin.funxplora.com/api/insert-one-trx",
-                fd
-              );
+              // const response = await axios.post(
+              //   "https://admin.funxplora.com/api/insert-one-trx",
+              //   fd
+              // );
+              pool.getConnection((err, con) => {
+                if (err) {
+                  console.error("Error getting database connection: ", err);
+                  return res.status(500).json({
+                    msg: `Something went wrong ${err}`,
+                  });
+                }
+                const query = `CALL sp_insert_trx_one_min_result(?, ?, ?, ?, ?, ?, ?)`;
+                con.query(
+                  query,
+                  [
+                    num,
+                    String(moment(time).format("HH:mm:ss")),
+                    1,
+                    `**${obj.hash.slice(-4)}`,
+                    JSON.stringify(obj),
+                    `${obj.hash.slice(-5)}`,
+                    obj.number,
+                  ],
+                  (err, resule) => {
+                    con?.release();
+                    if (err) {
+                      console.log(err);
+                      return res.status(500).json({
+                        msg: "Something went wrong related with databse",
+                      });
+                    }
+                  }
+                );
+              });
             } catch (e) {
               console.log(e);
             }
@@ -408,7 +437,7 @@ if (x) {
   );
   setTimeout(() => {
     // generatedTimeEveryAfterEveryOneMinForRollet()
-    generatedTimeEveryAfterEveryOneMinTRX();
+    // generatedTimeEveryAfterEveryOneMinTRX();
     generatedTimeEveryAfterEveryOneMin();
     generatedTimeEveryAfterEveryThreeMin();
     generatedTimeEveryAfterEveryFiveMin();
@@ -421,8 +450,8 @@ const finalRescheduleJob = schedule.scheduleJob(
   function () {
     twoMinTrxJob?.cancel();
     threeMinTrxJob?.cancel();
-    generatedTimeEveryAfterEveryThreeMinTRX();
-    generatedTimeEveryAfterEveryFiveMinTRX();
+      generatedTimeEveryAfterEveryThreeMinTRX();
+      generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
 
@@ -716,287 +745,3 @@ app.get("/", (req, res) => {
 httpServer.listen(PORT, () => {
   console.log("Server listening on port", PORT);
 });
-
-// app.get("/api/v1/promotiondata", async (req, res) => {
-//   pool.getConnection((err, con) => {
-//     if (err) {
-//       con.release();
-//       console.error("Error getting database connection: ", err);
-//       return res.status(500).json({
-//         msg: `Something went wrong ${err}`,
-//       });
-//     }
-//     const { id } = req.query;
-//     if (!id || isNaN(id)) {
-//       con.release();
-//       return res.status(400).json({
-//         message: "Id is missing or invalid",
-//       });
-//     }
-
-//     try {
-//       con.query("SELECT * FROM user", (err, result) => {
-//         if (err) {
-//           console.error(err);
-//           con.release();
-//           return res.status(500).json({
-//             msg: "Error in data fetching",
-//             error: err.message,
-//             er: err,
-//           });
-//         }
-
-//         const array = result.map((i) => ({
-//           ...i,
-//           count: 0,
-//           teamcount: 0,
-//           directReferrals: [],
-//         }));
-
-//         let new_data = updateReferralCountnew(array).find((i) => i.id == id);
-//         const levels = Array.from({ length: 22 }, (_, i) => `level_${i + 1}`);
-
-//         let direct_ids = new_data.directReferrals?.map((i) => i?.c_id);
-
-//         let indirect_ids = [];
-//         for (let i = levels.length - 1; i >= 0; i--) {
-//           let currentLevel = new_data?.teamMembersByLevel[levels[i - 1]];
-//           let nextLevel = new_data?.teamMembersByLevel[levels[i]];
-
-//           if (currentLevel && nextLevel) {
-//             let idsToRemove = currentLevel.map((item) => item.id);
-//             nextLevel = nextLevel.filter(
-//               (item) => !idsToRemove.includes(item.id)
-//             );
-//             new_data.teamMembersByLevel[levels[i]] = nextLevel;
-//           }
-//         }
-
-//         for (let i = 1; i <= 6; i++) {
-//           if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
-//             indirect_ids.push(
-//               ...new_data.teamMembersByLevel[`level_${i}`].map(
-//                 (item) => item.id
-//               )
-//             );
-//           }
-//         }
-
-//         new_data = { ...new_data, deposit_member_amount: [] };
-
-//         const promises = [];
-//         for (let i = 1; i <= 6; i++) {
-//           if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
-//             let levelIds = new_data.teamMembersByLevel[`level_${i}`].map(
-//               (k) => k.id
-//             );
-//             const promise = new Promise((resolve, reject) => {
-//               con.query(
-//                 `SELECT SUM(tr15_amt) AS total_amount, COUNT(*) AS total_member
-//                  FROM tr15_fund_request
-//                  WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND
-//                  ${
-//                    levelIds.length > 0
-//                      ? `tr15_uid IN (${levelIds.join(",")})`
-//                      : "1 = 0"
-//                  }`,
-//                 (err, resultteamamount) => {
-//                   if (err) {
-//                     con.release();
-//                     console.error(err);
-//                     reject(err);
-//                   } else {
-//                     resolve(resultteamamount[0].total_amount || 0);
-//                   }
-//                 }
-//               );
-//             });
-//             promises.push(promise);
-//           } else {
-//             promises.push(0);
-//           }
-//         }
-
-//         Promise.all(promises)
-//           .then((deposit_member_amounts) => {
-//             new_data.deposit_member_amount = deposit_member_amounts;
-//             con.query(
-//               `SELECT SUM(tr15_amt) AS total_amount,COUNT(DISTINCT tr15_uid) AS total_member FROM tr15_fund_request WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND
-//               ${
-//                 direct_ids.length > 0
-//                   ? `tr15_uid IN (${direct_ids.join(",")})`
-//                   : "1 = 0"
-//               }`,
-//               (err, result) => {
-//                 if (err) {
-//                   con.release();
-//                   console.error(err);
-//                   return res.status(500).json({
-//                     msg: "Error in data fetching",
-//                     error: err.message,
-//                     er: err,
-//                   });
-//                 }
-
-//                 con.query(
-//                   `SELECT SUM(tr15_amt) AS total_amount,COUNT(DISTINCT tr15_uid) AS total_member FROM tr15_fund_request WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND
-//                                 ${
-//                                   indirect_ids.length > 0
-//                                     ? `tr15_uid IN (${indirect_ids.join(",")})`
-//                                     : "1 = 0"
-//                                 }`,
-
-//                   (err, resultteam) => {
-//                     if (err) {
-//                       console.error(err);
-//                       return res.status(500).json({
-//                         msg: "Error in data fetching",
-//                         error: err.message,
-//                         er: err,
-//                       });
-//                     }
-//                     con.release();
-//                     return res.status(200).json({
-//                       data: {
-//                         ...new_data,
-//                         deposit_member: result[0].total_member || 0,
-//                         deposit_recharge: result[0].total_amount || 0,
-//                         deposit_member_team: resultteam[0].total_member || 0,
-//                         deposit_recharge_team: resultteam[0].total_amount || 0,
-//                       },
-//                       msg: "Data fetched successfully",
-//                     });
-//                   }
-//                 );
-//               }
-//             );
-//           })
-//           .catch((err) => {
-//             console.error(err);
-//             con.release();
-//             return res.status(500).json({
-//               msg: "Error in data fetching",
-//               error: err.message,
-//               er: err,
-//             });
-//           });
-//       });
-//     } catch (e) {
-//       con.release();
-//       console.error(e);
-//       return res.status(500).json({
-//         msg: "Error in data fetching",
-//         error: e.message,
-//       });
-//     }
-//   });
-// });
-
-// function updateReferralCountnew(users) {
-//   const countMap = {};
-//   const teamCountMap = {};
-
-//   // Initialize count for each user
-//   users.forEach((user) => {
-//     countMap[user.id] = 0;
-//     teamCountMap[user.id] = 0;
-//     user.directReferrals = []; // Initialize directReferrals array for each user
-//   });
-
-//   // Update count for each referral used
-//   users.forEach((user) => {
-//     // Check if referral_user_id exists in countMap
-//     if (countMap.hasOwnProperty(user.referral_user_id)) {
-//       // Increase the count for the referral_user_id by 1
-//       countMap[user.referral_user_id]++;
-//     }
-//   });
-
-//   // Update team count, deposit_member, and deposit_member_team count for each user recursively
-//   const updateTeamCountRecursively = (user) => {
-//     let totalChildrenCount = 0;
-
-//     // Check if the user id exists in countMap
-//     if (countMap.hasOwnProperty(user.id)) {
-//       totalChildrenCount += countMap[user.id];
-
-//       // Iterate through each user
-//       users.forEach((u) => {
-//         // Check if the user's referral_user_id matches the current user's id
-//         if (u.referral_user_id === user.id) {
-//           // Check if the user's referral_user_id is not null
-//           if (user.referral_user_id !== null) {
-//             // Check if the directReferrals array does not already contain the current user
-//             if (
-//               !user.directReferrals.some((referral) => referral.c_id === u.id)
-//             ) {
-//               // If not, add the user to the directReferrals array
-//               user.directReferrals.push({
-//                 user_name: u.full_name,
-//                 mobile: u.mobile,
-//                 c_id: u.id,
-//                 id: u.username,
-//               });
-//             }
-//           }
-//           // Recursively update the team count for the current user
-//           totalChildrenCount += updateTeamCountRecursively(u);
-//         }
-//       });
-//     }
-
-//     return totalChildrenCount;
-//   };
-
-//   users.forEach((user) => {
-//     // Update teamCountMap if user.id exists in countMap
-//     if (countMap.hasOwnProperty(user.id)) {
-//       teamCountMap[user.id] = updateTeamCountRecursively(user);
-//     }
-
-//     // Add direct referral to the user's directReferrals array
-//   });
-
-//   const updateUserLevelRecursively = (user, level, maxLevel) => {
-//     if (level === 0 || level > maxLevel) return []; // Return an empty array if we reached the desired level or exceeded the maximum level
-
-//     const levelMembers = [];
-
-//     // Iterate through each user
-//     users.forEach((u) => {
-//       // Check if the user's referral_user_id matches the current user's id
-//       if (u.referral_user_id === user.id) {
-//         // Add the user's full_name and id to the levelMembers array
-//         levelMembers.push({ full_name: u.full_name, id: u.id });
-
-//         // Recursively update the team members for the current user at the next level
-//         const children = updateUserLevelRecursively(u, level + 1, maxLevel); // Increase level for the next level
-//         levelMembers.push(...children); // Concatenate children to the current levelMembers array
-//       }
-//     });
-
-//     return levelMembers;
-//   };
-
-//   users.forEach((user) => {
-//     // Initialize arrays for each level of team members
-//     user.teamMembersByLevel = {};
-
-//     // Populate arrays with team members at each level
-//     for (let i = 1; i <= 6; i++) {
-//       const levelMembers = updateUserLevelRecursively(user, 1, i); // Start from level 1 and set the maximum level for this user
-//       user.teamMembersByLevel[`level_${i}`] = levelMembers;
-//       if (levelMembers.length === 0) break; // Stop populating arrays if no team members at this level
-//     }
-//   });
-//   // Assign counts to each user
-//   users.forEach((user) => {
-//     // Update user properties with countMap, teamCountMap, depositMemberMap, depositMemberTeamMap,
-//     // depositRechargeMap, and depositRechargeTeamMap if user.id exists in the respective maps
-//     user.count = countMap.hasOwnProperty(user.id) ? countMap[user.id] : 0;
-//     user.teamcount = teamCountMap.hasOwnProperty(user.id)
-//       ? teamCountMap[user.id]
-//       : 0;
-//   });
-//   return users;
-// }
