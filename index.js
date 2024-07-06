@@ -439,9 +439,9 @@ if (x) {
   setTimeout(() => {
     // generatedTimeEveryAfterEveryOneMinForRollet()
     generatedTimeEveryAfterEveryOneMinTRX();
-    // generatedTimeEveryAfterEveryOneMin();
-    // generatedTimeEveryAfterEveryThreeMin();
-    // generatedTimeEveryAfterEveryFiveMin();
+    generatedTimeEveryAfterEveryOneMin();
+    generatedTimeEveryAfterEveryThreeMin();
+    generatedTimeEveryAfterEveryFiveMin();
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -451,8 +451,8 @@ const finalRescheduleJob = schedule.scheduleJob(
   function () {
     twoMinTrxJob?.cancel();
     threeMinTrxJob?.cancel();
-      // generatedTimeEveryAfterEveryThreeMinTRX();
-      // generatedTimeEveryAfterEveryFiveMinTRX();
+      generatedTimeEveryAfterEveryThreeMinTRX();
+      generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
 
