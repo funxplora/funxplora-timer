@@ -486,6 +486,179 @@ const generatedTimeEveryAfterEveryFiveMinTRX = () => {
   });
 };
 
+function randomStr(len, arr) {
+  let ans = "";
+  for (let i = len; i > 0; i--) {
+    ans += arr[Math.floor(Math.random() * arr.length)];
+  }
+  return ans;
+}
+
+/// five min trx jackpod funcction
+const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
+  let min = 4;
+  threeMinTrxJob = schedule.scheduleJob("* * * * * *", function () {
+    const currentTime = new Date().getSeconds(); // Get the current time
+    const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
+    io.emit("fivemintrxjackpod", `${min}_${timeToSend}`);
+    console.log(`${min}_${timeToSend}`, "Time to send");
+    if (min === 0 && timeToSend === 6) {
+      const datetoAPISend = parseInt(new Date().getTime().toString());
+      const actualtome = soment.tz("Asia/Kolkata");
+      const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
+      try {
+        const get_query_for_trans_id = `SELECT tr_tranaction_id FROM tr_game WHERE tr_id = 7;`;
+
+        pool.getConnection((err, con) => {
+          if (err) {
+            console.error("Error getting database connection: ", err);
+            return;
+          }
+          con.query(get_query_for_trans_id, (err, result) => {
+            if (err) {
+              con?.release();
+              return;
+            }
+
+            const trans_id = result?.[0]?.tr_tranaction_id;
+            const get_result_for_transid = `SELECT result FROM trx_manual_result where tr_type = 4 AND trans_id = ${String(
+              Number(trans_id) + 1
+            )};`;
+            con.query(get_result_for_transid, (err, result) => {
+              if (err) {
+                con?.release();
+                return;
+              }
+              const result_arrray = [
+               2002, 1000, 3002, 3001, 2001, 2005, 2004,
+              ];
+              let result_number =
+                result?.[0]?.result ||
+                result_arrray[Math.floor(Math.random() * result_arrray.length)];
+              setTimeout(async () => {
+                //  const res = await axios.get(
+                //     `https://apilist.tronscanapi.com/api/block?sort=-balance&start=0&limit=20&producer=&number=&start_timestamp=${datetoAPISend}&end_timestamp=${datetoAPISend}`
+                //    );
+                // if (res?.data?.data[0]) {
+                try {
+                  // pool.getConnection((err, con) => {
+                  //   if (err) {
+                  //     console.error("Error getting database connection: ", err);
+                  //     return;
+                  //   }
+                  const query = `CALL sp_insert_trx_five_min_jackpod_result(?, ?, ?, ?, ?, ?, ?)`;
+                  // const setResult = `CALL clear_bet_jackpod(?)`;
+
+                  con.query(
+                    query,
+                    [
+                      result_number,
+                      String(moment(time).format("HH:mm:ss")),
+                      4,
+                      `**${randomStr(
+                        4,
+                        "0123456789abcdefghijklmnopqrstuvwxyz"
+                      )}`,
+                      JSON.stringify(
+                        randomStr(10, "0123456789abcdefghijklmnopqrstuvwxyz")
+                      ),
+                      `${randomStr(
+                        10,
+                        "0123456789abcdefghijklmnopqrstuvwxyz"
+                      )?.slice(-5)}`,
+                      randomStr(8, "0123456789"),
+                    ],
+                    (err, result) => {
+                      // con?.release();
+                      if (err) {
+                        con?.release();
+                        return;
+                      }
+                    }
+                  );
+                  const get_pending_result = `SELECT userid, amount, gameid, number, totalamount FROM trx_colour_bet WHERE status = "0" AND gameid = 4;`;
+                  // const get_pending_result = `select * from user;`
+                  con.query(get_pending_result, (err, result) => {
+                    if (err) {
+                      con?.release();
+                      console.log(err);
+                      return;
+                    }
+                    result?.map((i) => {
+                      let win_result = 0;
+                      if (String(result_number) === i?.number) {
+                        win_result = 33;
+                      }
+                      if (win_result > 0) {
+                        const updatetrx_colour_bet = `UPDATE trx_colour_bet 
+                       SET win = ${Number(i?.totalamount) * 33}, status = "1"
+                         WHERE userid = ${i?.userid} AND gameid = ${Number(
+                          i?.gameid
+                        )};`;
+                        con.query(updatetrx_colour_bet, (err, result) => {
+                          if (err) {
+                            con.release();
+                            return;
+                          }
+                          const current_winning_wallet = `SELECT winning_wallet FROM user WHERE id=${Number(
+                            i?.userid
+                          )};`;
+                          con.query(current_winning_wallet, (err, result) => {
+                            if (err) {
+                              con.release();
+                              return;
+                            }
+                            const net_winning_amount =
+                              result?.[0]?.winning_wallet;
+                            const current_winning_wallet = `UPDATE user
+                            SET winning_wallet = ${String(
+                              Number(net_winning_amount) +
+                                Number(i?.totalamount) * 33
+                            )}
+                            WHERE id =${Number(i?.userid)};`;
+                            con.query(current_winning_wallet, (err, result) => {
+                              if (err) {
+                                con.release();
+                                return;
+                              }
+                            });
+                          });
+                        });
+                      } else {
+                        const updateReferralCountnew = `UPDATE trx_colour_bet SET status = "2" WHERE userid = ${
+                          i?.userid
+                        } AND gameid = ${Number(i?.gameid)} AND number = ${
+                          i?.number
+                        };`;
+                        con.query(updateReferralCountnew);
+                      }
+                    });
+                  });
+                  // });
+
+                  // const response = await axios.post(
+                  //   "https://admin.funxplora.com/api/insert-five-trx",
+                  //   fd
+                  // );
+                } catch (e) {
+                  console.log(e);
+                }
+                //   }
+              }, [1000]);
+            });
+          });
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    if (currentTime === 0) {
+      min--;
+      if (min < 0) min = 4; // Reset min to 4 when it reaches 0
+    }
+  });
+};
+
 io.on("connection", (socket) => {});
 
 let x = true;
@@ -502,18 +675,18 @@ if (x) {
     secondsUntilNextMinute
   );
   setTimeout(() => {
-    // generatedTimeEveryAfterEveryOneMinForRollet()
     generatedTimeEveryAfterEveryOneMinTRX();
     generatedTimeEveryAfterEveryOneMin();
     generatedTimeEveryAfterEveryThreeMin();
     generatedTimeEveryAfterEveryFiveMin();
+    generatedTimeEveryAfterEveryFiveMinTRXJackPod();
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
 
 const finalRescheduleJob = schedule.scheduleJob(
   // "15,30,45,0 * * * *",
-  "30 * * * *",
+  "0 * * * *",
   function () {
     twoMinTrxJob?.cancel();
     threeMinTrxJob?.cancel();
@@ -521,6 +694,7 @@ const finalRescheduleJob = schedule.scheduleJob(
     generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
+
 
 app.get("/api/v1/promotiondata-testing", async (req, res) => {
   pool.getConnection((err, con) => {
@@ -804,6 +978,101 @@ function updateReferralCountnew(users) {
 
   return users;
 }
+
+app.post("/api/v1/place-bid-jackpod", async (req, res) => {
+  pool.getConnection((err, con) => {
+    if (err) {
+      console.error("Error getting database connection: ", err);
+      return res.status(500).json({
+        msg: `Something went wrong ${err} HIIIIII`,
+      });
+    }
+    const { userid, amount, gameid, number } = req.body;
+    if (!userid || !amount || !gameid || !number)
+      return res.status(200).json({
+        msg: "Everything is required",
+      });
+
+    const query =
+      "CALL trx_bet_placing_jack_pod(?,?,?,?, @result_msg); SELECT @result_msg;";
+
+    con.query(query, [userid, gameid, amount, number], (err, result) => {
+      if (err) {
+        con.release();
+        return res.status(500).json({
+          msg: "Something went wrong",
+          err: err,
+        });
+      }
+      const resultMsg = result[1][0]["@result_msg"];
+      return res.status(200).json({
+        msg: resultMsg,
+      });
+    });
+  });
+  // trx_bet_placing_jack_pod
+});
+
+app.get("/api/v1/my-history-jackpod", async (req, res) => {
+  pool.getConnection((err, con) => {
+    if (err) {
+      console.error("Error getting database connection: ", err);
+      return res.status(500).json({
+        msg: `Something went wrong ${err} `,
+      });
+    }
+    const { userid } = req.query;
+    if (!userid)
+      return res.status(200).json({
+        msg: "Everything is required",
+      });
+
+    const query =
+      "SELECT * FROM trx_colour_bet WHERE userid = ? AND gameid = ? ORDER BY datetime DESC LIMIT 100;";
+
+    con.query(query, [String(userid), 4], (err, result) => {
+      if (err) {
+        con.release();
+        return res.status(500).json({
+          msg: "Something went wrong",
+          err: err,
+        });
+      }
+      return res.status(200).json({
+        msg: "Recorf get successfully",
+        data: result,
+      });
+    });
+  });
+});
+
+app.get("/api/v1/game-history-jackpod", async (req, res) => {
+  pool.getConnection((err, con) => {
+    if (err) {
+      console.error("Error getting database connection: ", err);
+      return res.status(500).json({
+        msg: `Something went wrong ${err} `,
+      });
+    }
+
+    const query =
+      "SELECT * FROM tr42_win_slot WHERE  tr41_packtype = ? ORDER BY tr_transaction_id DESC LIMIT 200;";
+
+    con.query(query, [4], (err, result) => {
+      if (err) {
+        con.release();
+        return res.status(500).json({
+          msg: "Something went wrong",
+          err: err,
+        });
+      }
+      return res.status(200).json({
+        msg: "Recorf get successfully",
+        data: result,
+      });
+    });
+  });
+});
 
 app.get("/", (req, res) => {
   res.send(`<h1>server running at port=====> ${PORT}</h1>`);
