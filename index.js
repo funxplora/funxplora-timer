@@ -685,7 +685,7 @@ if (x) {
 
 const finalRescheduleJob = schedule.scheduleJob(
   // "15,30,45,0 * * * *",
-  "0 * * * *",
+  "15,30,45,0 * * * *",
   function () {
     twoMinTrxJob?.cancel();
     threeMinTrxJob?.cancel();
