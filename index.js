@@ -87,6 +87,7 @@ const job = schedule.scheduleJob("30 0 * * *", async function () {
 
 let twoMinTrxJob;
 let threeMinTrxJob;
+let jackpodTrxJob;
 
 // color prediction game time generated every 1 min
 function generatedTimeEveryAfterEveryOneMin() {
@@ -496,10 +497,17 @@ function randomStr(len, arr) {
 
 /// five min trx jackpod funcction
 const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
-  let min = 4;
-  threeMinTrxJob = schedule.scheduleJob("* * * * * *", function () {
-    const currentTime = new Date().getSeconds(); // Get the current time
-    const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
+  let min = 0;
+  let sec = 60;
+  jackpodTrxJob = schedule.scheduleJob("* * * * * *", function () {
+    // const currentTime = new Date().getSeconds(); // Get the current time
+    const currentTime = sec;
+    sec = sec - 1;
+    if (sec < 0) {
+      sec = 59;
+    }
+    const timeToSend = sec;
+    // currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("fivemintrxjackpod", `${min}_${timeToSend}`);
     console.log(`${min}_${timeToSend}`, "Time to send");
     if (min === 0 && timeToSend === 6) {
@@ -530,9 +538,15 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
                 return;
               }
               const result_arrray = [2002, 1000, 3002, 3001, 2001, 2005, 2004];
-              let result_number = result?.[0]?.result ||
+              let result_number =
+                result?.[0]?.result ||
                 result_arrray[Math.floor(Math.random() * result_arrray.length)];
-                console.log(result?.[0]?.result,trans_id,result_number,"hiiiiiiiiiiiiiii")
+              console.log(
+                result?.[0]?.result,
+                trans_id,
+                result_number,
+                "hiiiiiiiiiiiiiii"
+              );
               setTimeout(async () => {
                 //  const res = await axios.get(
                 //     `https://apilist.tronscanapi.com/api/block?sort=-balance&start=0&limit=20&producer=&number=&start_timestamp=${datetoAPISend}&end_timestamp=${datetoAPISend}`
@@ -575,13 +589,15 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
                     }
                   );
 
-                  const call_bet_clear_sp = `CALL clear_bet_jackpod(${String(result_number)})`;
-                  con.query(call_bet_clear_sp,(err,result)=>{
-                    if(err){
+                  const call_bet_clear_sp = `CALL clear_bet_jackpod(${String(
+                    result_number
+                  )})`;
+                  con.query(call_bet_clear_sp, (err, result) => {
+                    if (err) {
                       con.release();
                       return;
                     }
-                  })
+                  });
                   // const get_pending_result = `SELECT userid, amount, gameid, number, totalamount FROM trx_colour_bet WHERE status = "0" AND gameid = 4;`;
                   // con.query(get_pending_result, (err, result) => {
                   //   if (err) {
@@ -653,7 +669,11 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
     }
     if (currentTime === 0) {
       min--;
-      if (min < 0) min = 4; // Reset min to 4 when it reaches 0
+      if (min < 0) {
+        jackpodTrxJob?.cancel();
+        min = 0;
+        sec = 0;
+      } // Reset min to 4 when it reaches 0
     }
   });
 };
@@ -678,7 +698,7 @@ if (x) {
     generatedTimeEveryAfterEveryOneMin();
     generatedTimeEveryAfterEveryThreeMin();
     generatedTimeEveryAfterEveryFiveMin();
-    generatedTimeEveryAfterEveryFiveMinTRXJackPod();
+    // generatedTimeEveryAfterEveryFiveMinTRXJackPod();
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -693,6 +713,8 @@ const finalRescheduleJob = schedule.scheduleJob(
     generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
+
+// generatedTimeEveryAfterEveryFiveMinTRXJackPod();
 
 app.get("/api/v1/promotiondata-testing", async (req, res) => {
   pool.getConnection((err, con) => {
@@ -1070,6 +1092,17 @@ app.get("/api/v1/game-history-jackpod", async (req, res) => {
       });
     });
   });
+});
+
+app.get("/get-jackpod-result", async (req, res) => {
+  try {
+    generatedTimeEveryAfterEveryFiveMinTRXJackPod();
+    res.status(200)?.json({
+      msg: "APi hit successfully",
+    });
+  } catch (e) {
+    console.log("error in end point function", e);
+  }
 });
 
 app.get("/", (req, res) => {
