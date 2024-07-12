@@ -529,12 +529,10 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
                 con?.release();
                 return;
               }
-              const result_arrray = [
-               2002, 1000, 3002, 3001, 2001, 2005, 2004,
-              ];
-              let result_number =
-                result?.[0]?.result ||
+              const result_arrray = [2002, 1000, 3002, 3001, 2001, 2005, 2004];
+              let result_number = result?.[0]?.result ||
                 result_arrray[Math.floor(Math.random() * result_arrray.length)];
+                console.log(result?.[0]?.result,trans_id,result_number,"hiiiiiiiiiiiiiii")
               setTimeout(async () => {
                 //  const res = await axios.get(
                 //     `https://apilist.tronscanapi.com/api/block?sort=-balance&start=0&limit=20&producer=&number=&start_timestamp=${datetoAPISend}&end_timestamp=${datetoAPISend}`
@@ -576,70 +574,71 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
                       }
                     }
                   );
-                  const get_pending_result = `SELECT userid, amount, gameid, number, totalamount FROM trx_colour_bet WHERE status = "0" AND gameid = 4;`;
-                  // const get_pending_result = `select * from user;`
-                  con.query(get_pending_result, (err, result) => {
-                    if (err) {
-                      con?.release();
-                      console.log(err);
+
+                  const call_bet_clear_sp = `CALL clear_bet_jackpod(${String(result_number)})`;
+                  con.query(call_bet_clear_sp,(err,result)=>{
+                    if(err){
+                      con.release();
                       return;
                     }
-                    result?.map((i) => {
-                      let win_result = 0;
-                      if (String(result_number) === i?.number) {
-                        win_result = 33;
-                      }
-                      if (win_result > 0) {
-                        const updatetrx_colour_bet = `UPDATE trx_colour_bet 
-                       SET win = ${Number(i?.totalamount) * 33}, status = "1"
-                         WHERE userid = ${i?.userid} AND gameid = ${Number(
-                          i?.gameid
-                        )};`;
-                        con.query(updatetrx_colour_bet, (err, result) => {
-                          if (err) {
-                            con.release();
-                            return;
-                          }
-                          const current_winning_wallet = `SELECT winning_wallet FROM user WHERE id=${Number(
-                            i?.userid
-                          )};`;
-                          con.query(current_winning_wallet, (err, result) => {
-                            if (err) {
-                              con.release();
-                              return;
-                            }
-                            const net_winning_amount =
-                              result?.[0]?.winning_wallet;
-                            const current_winning_wallet = `UPDATE user
-                            SET winning_wallet = ${String(
-                              Number(net_winning_amount) +
-                                Number(i?.totalamount) * 33
-                            )}
-                            WHERE id =${Number(i?.userid)};`;
-                            con.query(current_winning_wallet, (err, result) => {
-                              if (err) {
-                                con.release();
-                                return;
-                              }
-                            });
-                          });
-                        });
-                      } else {
-                        const updateReferralCountnew = `UPDATE trx_colour_bet SET status = "2" WHERE userid = ${
-                          i?.userid
-                        } AND gameid = ${Number(i?.gameid)} AND number = ${
-                          i?.number
-                        };`;
-                        con.query(updateReferralCountnew);
-                      }
-                    });
-                  });
+                  })
+                  // const get_pending_result = `SELECT userid, amount, gameid, number, totalamount FROM trx_colour_bet WHERE status = "0" AND gameid = 4;`;
+                  // con.query(get_pending_result, (err, result) => {
+                  //   if (err) {
+                  //     con?.release();
+                  //     console.log(err);
+                  //     return;
+                  //   }
+                  //   result?.map((i) => {
+                  //     let win_result = 0;
+                  //     if (String(result_number) === i?.number) {
+                  //       win_result = 33;
+                  //     }
+                  //     if (win_result > 0) {
+                  //       const updatetrx_colour_bet = `UPDATE trx_colour_bet
+                  //      SET win = ${Number(i?.totalamount) * 33}, status = "1"
+                  //        WHERE userid = ${i?.userid} AND gameid = ${Number(
+                  //         i?.gameid
+                  //       )};`;
+                  //       con.query(updatetrx_colour_bet, (err, result) => {
+                  //         if (err) {
+                  //           con.release();
+                  //           return;
+                  //         }
+                  //         const current_winning_wallet = `SELECT winning_wallet FROM user WHERE id=${Number(
+                  //           i?.userid
+                  //         )};`;
+                  //         con.query(current_winning_wallet, (err, result) => {
+                  //           if (err) {
+                  //             con.release();
+                  //             return;
+                  //           }
+                  //           const net_winning_amount =
+                  //             result?.[0]?.winning_wallet;
+                  //           const current_winning_wallet = `UPDATE user
+                  //           SET winning_wallet = ${String(
+                  //             Number(net_winning_amount) +
+                  //               Number(i?.totalamount) * 33
+                  //           )}
+                  //           WHERE id =${Number(i?.userid)};`;
+                  //           con.query(current_winning_wallet, (err, result) => {
+                  //             if (err) {
+                  //               con.release();
+                  //               return;
+                  //             }
+                  //           });
+                  //         });
+                  //       });
+                  //     } else {
+                  //       const updateReferralCountnew = `UPDATE trx_colour_bet SET status = "2" WHERE userid = ${
+                  //         i?.userid
+                  //       } AND gameid = ${Number(i?.gameid)} AND number = ${
+                  //         i?.number
+                  //       };`;
+                  //       con.query(updateReferralCountnew);
+                  //     }
+                  //   });
                   // });
-
-                  // const response = await axios.post(
-                  //   "https://admin.funxplora.com/api/insert-five-trx",
-                  //   fd
-                  // );
                 } catch (e) {
                   console.log(e);
                 }
@@ -694,7 +693,6 @@ const finalRescheduleJob = schedule.scheduleJob(
     generatedTimeEveryAfterEveryFiveMinTRX();
   }
 );
-
 
 app.get("/api/v1/promotiondata-testing", async (req, res) => {
   pool.getConnection((err, con) => {
