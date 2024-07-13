@@ -708,8 +708,8 @@ if (x) {
 //   // "15,30,45,0 * * * *",
 //   "30 * * * *",
 //   function () {
-    // twoMinTrxJob?.cancel();
-    // threeMinTrxJob?.cancel();
+// twoMinTrxJob?.cancel();
+// threeMinTrxJob?.cancel();
 //     if (y) {
 //       generatedTimeEveryAfterEveryThreeMinTRX();
 //       generatedTimeEveryAfterEveryFiveMinTRX();
@@ -718,36 +718,26 @@ if (x) {
 //   }
 // );
 
-let y = true;
-if (y) {
-  console.log("Waiting until 10:30 to start...");
-
+// console.log(time,moment(time).format("HH:mm:ss"))
+if (trx) {
   const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 30, 0); // Set target time to 10:30
+  const nowIST = soment(now).tz("Asia/Kolkata");
 
-  let millisecondsUntilTarget = target - now;
+  const currentMinute = nowIST.minutes();
+  const currentSecond = nowIST.seconds();
 
-  // If the target time has already passed for today, schedule it for tomorrow
-  if (millisecondsUntilTarget < 0) {
-    target.setDate(target.getDate() + 1);
-    millisecondsUntilTarget = target - now;
-  }
+  const minutesRemaining = 15 - currentMinute - 1;
+  const secondsRemaining = 60 - currentSecond;
 
-  console.log(
-    "Current time: ",
-    now.toLocaleTimeString(),
-    "Milliseconds until 10:30: ",
-    millisecondsUntilTarget
-  );
+  const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
+  console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    console.log("inside the functon")
     generatedTimeEveryAfterEveryThreeMinTRX();
     generatedTimeEveryAfterEveryFiveMinTRX();
-    y = false;
-  }, millisecondsUntilTarget);
+    trx = false;
+  }, delay);
 }
-
 
 // generatedTimeEveryAfterEveryFiveMinTRXJackPod();
 
