@@ -703,20 +703,49 @@ if (x) {
   }, secondsUntilNextMinute * 1000);
 }
 
-let y = true;
-const finalRescheduleJob = schedule.scheduleJob(
-  // "15,30,45,0 * * * *",
-  "15 * * * *",
-  function () {
+// let y = true;
+// const finalRescheduleJob = schedule.scheduleJob(
+//   // "15,30,45,0 * * * *",
+//   "30 * * * *",
+//   function () {
     // twoMinTrxJob?.cancel();
     // threeMinTrxJob?.cancel();
-    if (y) {
-      generatedTimeEveryAfterEveryThreeMinTRX();
-      generatedTimeEveryAfterEveryFiveMinTRX();
-      y = false;
-    }
+//     if (y) {
+//       generatedTimeEveryAfterEveryThreeMinTRX();
+//       generatedTimeEveryAfterEveryFiveMinTRX();
+//       y = false;
+//     }
+//   }
+// );
+
+if (y) {
+  console.log("Waiting until 10:30 to start...");
+
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30, 0); // Set target time to 10:30
+
+  let millisecondsUntilTarget = target - now;
+
+  // If the target time has already passed for today, schedule it for tomorrow
+  if (millisecondsUntilTarget < 0) {
+    target.setDate(target.getDate() + 1);
+    millisecondsUntilTarget = target - now;
   }
-);
+
+  console.log(
+    "Current time: ",
+    now.toLocaleTimeString(),
+    "Milliseconds until 10:30: ",
+    millisecondsUntilTarget
+  );
+
+  setTimeout(() => {
+    generatedTimeEveryAfterEveryThreeMinTRX();
+    generatedTimeEveryAfterEveryFiveMinTRX();
+    y = false;
+  }, millisecondsUntilTarget);
+}
+
 
 // generatedTimeEveryAfterEveryFiveMinTRXJackPod();
 
