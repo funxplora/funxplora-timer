@@ -694,10 +694,10 @@ if (x) {
     secondsUntilNextMinute
   );
   setTimeout(() => {
-    // generatedTimeEveryAfterEveryOneMinTRX();
-    // generatedTimeEveryAfterEveryOneMin();
-    // generatedTimeEveryAfterEveryThreeMin();
-    // generatedTimeEveryAfterEveryFiveMin();
+    generatedTimeEveryAfterEveryOneMinTRX();
+    generatedTimeEveryAfterEveryOneMin();
+    generatedTimeEveryAfterEveryThreeMin();
+    generatedTimeEveryAfterEveryFiveMin();
     // generatedTimeEveryAfterEveryFiveMinTRXJackPod();
     x = false;
   }, secondsUntilNextMinute * 1000);
@@ -723,7 +723,7 @@ if (y) {
   console.log("Waiting until 10:30 to start...");
 
   const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45, 0); // Set target time to 10:30
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 30, 0); // Set target time to 10:30
 
   let millisecondsUntilTarget = target - now;
 
