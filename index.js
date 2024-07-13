@@ -703,14 +703,18 @@ if (x) {
   }, secondsUntilNextMinute * 1000);
 }
 
+let y = true;
 const finalRescheduleJob = schedule.scheduleJob(
   // "15,30,45,0 * * * *",
-  "15,30,45,0 * * * *",
+  "15 * * * *",
   function () {
-    twoMinTrxJob?.cancel();
-    threeMinTrxJob?.cancel();
-    generatedTimeEveryAfterEveryThreeMinTRX();
-    generatedTimeEveryAfterEveryFiveMinTRX();
+    // twoMinTrxJob?.cancel();
+    // threeMinTrxJob?.cancel();
+    if (y) {
+      generatedTimeEveryAfterEveryThreeMinTRX();
+      generatedTimeEveryAfterEveryFiveMinTRX();
+      y = false;
+    }
   }
 );
 
