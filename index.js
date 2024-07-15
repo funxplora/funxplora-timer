@@ -1041,7 +1041,7 @@ app.post("/api/v1/place-bid-jackpod", async (req, res) => {
     const query =
       "CALL trx_bet_placing_jack_pod(?,?,?,?, @result_msg); SELECT @result_msg;";
 
-    con.query(query, [userid, gameid, amount, number], (err, result) => {
+    con.query(query, [String(userid), 4, String(amount), String(number)], (err, result) => {
       if (err) {
         con.release();
         return res.status(500).json({
