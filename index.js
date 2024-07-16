@@ -226,8 +226,8 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
           const res = await axios.get(
             `https://apilist.tronscanapi.com/api/block?sort=-balance&start=0&limit=20&producer=&number=&start_timestamp=${datetoAPISend}&end_timestamp=${datetoAPISend}`
           );
-          if (res?.data?.data[0]) {
-            const obj = res.data.data[0];
+          if (res?.data?.data?.[0]) {
+            const obj = res.data.data?.[0];
             // const fd = new FormData();
             // fd.append("hash", `**${obj.hash.slice(-4)}`);
             // fd.append("digits", `${obj.hash.slice(-5)}`);
@@ -304,6 +304,7 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
 }
 
 const generatedTimeEveryAfterEveryThreeMinTRX = () => {
+  console.log("FUnction is ")
   let min = 2;
   twoMinTrxJob = schedule.scheduleJob("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
@@ -698,7 +699,6 @@ if (x) {
     generatedTimeEveryAfterEveryOneMin();
     generatedTimeEveryAfterEveryThreeMin();
     generatedTimeEveryAfterEveryFiveMin();
-    // generatedTimeEveryAfterEveryFiveMinTRXJackPod();
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -726,7 +726,7 @@ if (trx) {
   const currentMinute = nowIST.minutes();
   const currentSecond = nowIST.seconds();
 
-  const minutesRemaining = 45 - currentMinute - 1;
+  const minutesRemaining = 30 - currentMinute - 1;
   const secondsRemaining = 60 - currentSecond;
 
   const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
@@ -996,7 +996,11 @@ function updateReferralCountnew(users) {
     const levelMembers = [];
     users.forEach((u) => {
       if (u.referral_user_id === user.id) {
-        levelMembers.push({ full_name: u.full_name, id: u.id });
+        levelMembers.push({
+          full_name: u.full_name,
+          id: u.id,
+          tr15_amt: u.tr15_amt,
+        });
         const children = updateUserLevelRecursively(u, level + 1, maxLevel);
         levelMembers.push(...children);
       }
@@ -1041,19 +1045,23 @@ app.post("/api/v1/place-bid-jackpod", async (req, res) => {
     const query =
       "CALL trx_bet_placing_jack_pod(?,?,?,?, @result_msg); SELECT @result_msg;";
 
-    con.query(query, [String(userid), 4, String(amount), String(number)], (err, result) => {
-      if (err) {
-        con.release();
-        return res.status(500).json({
-          msg: "Something went wrong",
-          err: err,
+    con.query(
+      query,
+      [String(userid), 4, String(amount), String(number)],
+      (err, result) => {
+        if (err) {
+          con.release();
+          return res.status(500).json({
+            msg: "Something went wrong",
+            err: err,
+          });
+        }
+        const resultMsg = result[1][0]["@result_msg"];
+        return res.status(200).json({
+          msg: resultMsg,
         });
       }
-      const resultMsg = result[1][0]["@result_msg"];
-      return res.status(200).json({
-        msg: resultMsg,
-      });
-    });
+    );
   });
   // trx_bet_placing_jack_pod
 });
