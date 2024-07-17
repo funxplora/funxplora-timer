@@ -118,8 +118,6 @@ const oneMinColorWinning = async () => {
 // color prediction game time generated every 3 min
 const generatedTimeEveryAfterEveryThreeMin = () => {
   let min = 2;
-  const rule = new schedule.RecurrenceRule();
-  rule.second = new schedule.Range(0, 59);
   const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
@@ -154,8 +152,6 @@ const oneMinColorWinning2min = async () => {
 
 const generatedTimeEveryAfterEveryFiveMin = () => {
   let min = 4;
-  const rule = new schedule.RecurrenceRule();
-  rule.second = new schedule.Range(0, 59);
   const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
@@ -197,9 +193,7 @@ const oneMinColorWinning3sec = async () => {
 function generatedTimeEveryAfterEveryOneMinTRX() {
   let three = 0;
   let five = 0;
-  const rule = new schedule.RecurrenceRule();
-  rule.second = new schedule.Range(0, 59);
-  let oneMinTrxJob = schedule.schedule(rule, function () {
+  let oneMinTrxJob = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date();
     const timeToSend =
       currentTime.getSeconds() > 0
