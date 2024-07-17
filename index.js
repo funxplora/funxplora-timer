@@ -50,40 +50,40 @@ pool.on("connection", function (_conn) {
   }
 });
 
-const job = schedule.schedule("30 0 * * *", async function () {
-  console.log("Message nhi aaya hai.");
-  try {
-    // Make the API call using axios
-    const response = await axios.get(
-      "https://admin.funxplora.com/api/Daily-salary-income"
-    );
+// const job = schedule.schedule("30 0 * * *", async function () {
+//   console.log("Message nhi aaya hai.");
+//   try {
+//     // Make the API call using axios
+//     const response = await axios.get(
+//       "https://admin.funxplora.com/api/Daily-salary-income"
+//     );
 
-    setTimeout(async () => {
-      try {
-        await axios.get("https://admin.funxplora.com/api/bet-income");
-      } catch (e) {
-        console.log(e);
-      }
+//     setTimeout(async () => {
+//       try {
+//         await axios.get("https://admin.funxplora.com/api/bet-income");
+//       } catch (e) {
+//         console.log(e);
+//       }
 
-      setTimeout(async () => {
-        await axios.get("https://admin.funxplora.com/api/wallet-income");
-      }, 3000);
-    }, 2000);
+//       setTimeout(async () => {
+//         await axios.get("https://admin.funxplora.com/api/wallet-income");
+//       }, 3000);
+//     }, 2000);
 
-    setTimeout(async () => {
-      try {
-        // await axios.get("https://admin.funxplora.com/api/direct-income");
-        await axios.get(
-          "https://admin.funxplora.com/api/daily-non-working-bonus"
-        );
-      } catch (e) {
-        console.log(e);
-      }
-    }, 3000);
-  } catch (error) {
-    console.error("Error:", error.message);
-  }
-});
+//     setTimeout(async () => {
+//       try {
+//         // await axios.get("https://admin.funxplora.com/api/direct-income");
+//         await axios.get(
+//           "https://admin.funxplora.com/api/daily-non-working-bonus"
+//         );
+//       } catch (e) {
+//         console.log(e);
+//       }
+//     }, 3000);
+//   } catch (error) {
+//     console.error("Error:", error.message);
+//   }
+// });
 
 let twoMinTrxJob;
 let threeMinTrxJob;
