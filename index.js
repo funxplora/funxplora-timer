@@ -7,7 +7,7 @@ const moment = require("moment");
 const soment = require("moment-timezone");
 require("dotenv").config();
 const mysql = require("mysql");
-const schedule = require("node-schedule");
+const schedule = require("node-cron");
 const { default: axios } = require("axios");
 const app = express();
 const httpServer = http.createServer(app);
@@ -50,7 +50,7 @@ pool.on("connection", function (_conn) {
   }
 });
 
-const job = schedule.scheduleJob("30 0 * * *", async function () {
+const job = schedule.schedule("30 0 * * *", async function () {
   console.log("Message nhi aaya hai.");
   try {
     // Make the API call using axios
@@ -91,7 +91,7 @@ let jackpodTrxJob;
 
 // color prediction game time generated every 1 min
 function generatedTimeEveryAfterEveryOneMin() {
-  const job = schedule.scheduleJob("* * * * * *", function () {
+  const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date();
     const timeToSend =
       currentTime.getSeconds() > 0
@@ -120,7 +120,7 @@ const generatedTimeEveryAfterEveryThreeMin = () => {
   let min = 2;
   const rule = new schedule.RecurrenceRule();
   rule.second = new schedule.Range(0, 59);
-  const job = schedule.scheduleJob("* * * * * *", function () {
+  const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("threemin", `${min}_${timeToSend}`);
@@ -156,7 +156,7 @@ const generatedTimeEveryAfterEveryFiveMin = () => {
   let min = 4;
   const rule = new schedule.RecurrenceRule();
   rule.second = new schedule.Range(0, 59);
-  const job = schedule.scheduleJob("* * * * * *", function () {
+  const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("fivemin", `${min}_${timeToSend}`);
@@ -199,7 +199,7 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
   let five = 0;
   const rule = new schedule.RecurrenceRule();
   rule.second = new schedule.Range(0, 59);
-  let oneMinTrxJob = schedule.scheduleJob(rule, function () {
+  let oneMinTrxJob = schedule.schedule(rule, function () {
     const currentTime = new Date();
     const timeToSend =
       currentTime.getSeconds() > 0
@@ -304,9 +304,8 @@ function generatedTimeEveryAfterEveryOneMinTRX() {
 }
 
 const generatedTimeEveryAfterEveryThreeMinTRX = () => {
-  console.log("FUnction is ")
   let min = 2;
-  twoMinTrxJob = schedule.scheduleJob("* * * * * *", function () {
+  twoMinTrxJob = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("threemintrx", `${min}_${timeToSend}`);
@@ -398,7 +397,7 @@ const generatedTimeEveryAfterEveryThreeMinTRX = () => {
 
 const generatedTimeEveryAfterEveryFiveMinTRX = () => {
   let min = 4;
-  threeMinTrxJob = schedule.scheduleJob("* * * * * *", function () {
+  threeMinTrxJob = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("fivemintrx", `${min}_${timeToSend}`);
@@ -500,7 +499,7 @@ function randomStr(len, arr) {
 const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
   let min = 0;
   let sec = 60;
-  jackpodTrxJob = schedule.scheduleJob("* * * * * *", function () {
+  jackpodTrxJob = schedule.schedule("* * * * * *", function () {
     // const currentTime = new Date().getSeconds(); // Get the current time
     const currentTime = sec;
     sec = sec - 1;
@@ -704,7 +703,7 @@ if (x) {
 }
 
 // let y = true;
-// const finalRescheduleJob = schedule.scheduleJob(
+// const finalReschedule = schedule.schedule(
 //   // "15,30,45,0 * * * *",
 //   "30 * * * *",
 //   function () {
@@ -718,7 +717,6 @@ if (x) {
 //   }
 // );
 
-// console.log(time,moment(time).format("HH:mm:ss"))
 if (trx) {
   const now = new Date();
   const nowIST = soment(now).tz("Asia/Kolkata");
