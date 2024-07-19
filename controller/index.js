@@ -259,145 +259,108 @@ exports.generatedTimeEveryAfterEveryFiveMinTRX = (io) => {
   });
 };
 
-
-
 exports.getPromotionData = async (req, res) => {
   try {
     const { id } = req.query;
     if (!id || isNaN(id)) {
-      return res.status(400).json({
-        message: "Id is missing or invalid",
-      });
+      return res.status(400).json({ message: "Id is missing or invalid" });
     }
+
     const query = `SELECT * FROM user;`;
+    const result = await queryDb(query, []);
 
-    await queryDb(query, [])
-      .then((result) => {
-        const array = result.map((i) => ({
-          ...i,
-          count: 0,
-          teamcount: 0,
-          directReferrals: [],
-        }));
+    const array = result.map((i) => ({
+      ...i,
+      count: 0,
+      teamcount: 0,
+      directReferrals: [],
+    }));
 
-        let new_data = updateReferralCountnew(array).find((i) => i.id == id);
-        const levels = Array.from({ length: 22 }, (_, i) => `level_${i + 1}`);
+    let new_data = updateReferralCountnew(array).find((i) => i.id == id);
 
-        let direct_ids = new_data.directReferrals?.map((i) => i?.c_id);
+    const levels = Array.from({ length: 22 }, (_, i) => `level_${i + 1}`);
+    let direct_ids = new_data.directReferrals?.map((i) => i?.c_id);
+    let indirect_ids = [];
 
-        let indirect_ids = [];
-        for (let i = levels.length - 1; i >= 0; i--) {
-          let currentLevel = new_data?.teamMembersByLevel[levels[i - 1]];
-          let nextLevel = new_data?.teamMembersByLevel[levels[i]];
+    for (let i = levels.length - 1; i >= 0; i--) {
+      let currentLevel = new_data?.teamMembersByLevel[levels[i - 1]];
+      let nextLevel = new_data?.teamMembersByLevel[levels[i]];
 
-          if (currentLevel && nextLevel) {
-            let idsToRemove = currentLevel.map((item) => item.id);
-            nextLevel = nextLevel.filter(
-              (item) => !idsToRemove.includes(item.id)
-            );
-            new_data.teamMembersByLevel[levels[i]] = nextLevel;
-          }
-        }
+      if (currentLevel && nextLevel) {
+        let idsToRemove = currentLevel.map((item) => item.id);
+        nextLevel = nextLevel.filter((item) => !idsToRemove.includes(item.id));
+        new_data.teamMembersByLevel[levels[i]] = nextLevel;
+      }
+    }
 
-        for (let i = 1; i <= 6; i++) {
-          if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
-            indirect_ids.push(
-              ...new_data.teamMembersByLevel[`level_${i}`].map(
-                (item) => item.id
-              )
-            );
-          }
-        }
+    for (let i = 1; i <= 6; i++) {
+      if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
+        indirect_ids.push(
+          ...new_data.teamMembersByLevel[`level_${i}`].map((item) => item.id)
+        );
+      }
+    }
 
-        new_data = { ...new_data, deposit_member_amount: [] };
+    new_data = { ...new_data, deposit_member_amount: [] };
 
-        const promises = [];
-        for (let i = 1; i <= 6; i++) {
-          if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
-            let levelIds = new_data.teamMembersByLevel[`level_${i}`].map(
-              (k) => k.id
-            );
-            const promise = new Promise((resolve, reject) => {
-              const query = `SELECT SUM(tr15_amt) AS total_amount, COUNT(*) AS total_member
-               FROM tr15_fund_request
-               WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
-               ${
-                 levelIds.length > 0
-                   ? `tr15_uid IN (${levelIds.join(",")})`
-                   : "1 = 0"
-               }`;
-              return new Promise((resolve, reject) => {
-                sql.query(query, [], (err, resultteamamount) => {
-                  if (err) {
-                    //return reject(err);
-                    return console.log(err);
-                  }
-                  resolve(resultteamamount[0].total_amount || 0);
-                });
-              });
-            });
-            promises.push(promise);
-          } else {
-            promises.push(Promise.resolve(0));
-          }
-        }
+    const promises = [];
+    for (let i = 1; i <= 6; i++) {
+      if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
+        let levelIds = new_data.teamMembersByLevel[`level_${i}`].map((k) => k.id);
+        const query = `SELECT SUM(tr15_amt) AS total_amount, COUNT(*) AS total_member
+          FROM tr15_fund_request
+          WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
+          ${levelIds.length > 0 ? `tr15_uid IN (${levelIds.join(",")})` : "1 = 0"}`;
 
-        Promise.all(promises)
-          .then(async (deposit_member_amounts) => {
-            new_data.deposit_member_amount = deposit_member_amounts;
-            const query = `SELECT SUM(tr15_amt) AS total_amount,COUNT(DISTINCT tr15_uid) AS total_member FROM tr15_fund_request WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND
-            ${
-              direct_ids.length > 0
-                ? `tr15_uid IN (${direct_ids.join(",")})`
-                : "1 = 0"
-            }`;
-            await queryDb(query, [])
-              .then(async (result) => {
-                const newquery = `SELECT SUM(tr15_amt) AS total_amount,COUNT(DISTINCT tr15_uid) AS total_member FROM tr15_fund_request WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
-                              ${
-                                indirect_ids.length > 0
-                                  ? `tr15_uid IN (${indirect_ids.join(",")})`
-                                  : "1 = 0"
-                              }`;
-                await queryDb(newquery, [])
-                  .then((resultteam) => {
-                    for (let i = 1; i <= 6; i++) {
-                      if (!new_data.teamMembersByLevel[`level_${i}`]) {
-                        new_data.teamMembersByLevel[`level_${i}`] = [];
-                      }
-                    }
-                    return res.status(200).json({
-                      data: {
-                        ...new_data,
-                        deposit_member: result[0].total_member || 0,
-                        deposit_recharge: result[0].total_amount || 0,
-                        deposit_member_team: resultteam[0].total_member || 0,
-                        deposit_recharge_team: resultteam[0].total_amount || 0,
-                      },
-                      msg: "Data fetched successfully",
-                    });
-                  })
-                  .catch((e) => {
-                    console.log(e);
-                  });
-              })
-              .catch((e) => {
-                console.log(e);
-              });
-          })
-          .catch((err) => {
-            return res.status(500).json({
-              msg: "Error in data fetching",
-              error: err.message,
-              er: err,
-            });
-          });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+        const promise = queryDb(query, []).then((resultteamamount) => {
+          return resultteamamount[0]?.total_amount || 0;
+        }).catch((err) => {
+          console.log(err);
+          return 0;
+        });
+
+        promises.push(promise);
+      } else {
+        promises.push(Promise.resolve(0));
+      }
+    }
+
+    const deposit_member_amounts = await Promise.all(promises);
+    new_data.deposit_member_amount = deposit_member_amounts;
+
+    const directQuery = `SELECT SUM(tr15_amt) AS total_amount, COUNT(DISTINCT tr15_uid) AS total_member 
+      FROM tr15_fund_request 
+      WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
+      ${direct_ids.length > 0 ? `tr15_uid IN (${direct_ids.join(",")})` : "1 = 0"}`;
+
+    const directResult = await queryDb(directQuery, []);
+
+    const indirectQuery = `SELECT SUM(tr15_amt) AS total_amount, COUNT(DISTINCT tr15_uid) AS total_member 
+      FROM tr15_fund_request 
+      WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
+      ${indirect_ids.length > 0 ? `tr15_uid IN (${indirect_ids.join(",")})` : "1 = 0"}`;
+
+    const indirectResult = await queryDb(indirectQuery, []);
+
+    for (let i = 1; i <= 6; i++) {
+      if (!new_data.teamMembersByLevel[`level_${i}`]) {
+        new_data.teamMembersByLevel[`level_${i}`] = [];
+      }
+    }
+
+    return res.status(200).json({
+      data: {
+        ...new_data,
+        deposit_member: directResult[0]?.total_member || 0,
+        deposit_recharge: directResult[0]?.total_amount || 0,
+        deposit_member_team: indirectResult[0]?.total_member || 0,
+        deposit_recharge_team: indirectResult[0]?.total_amount || 0,
+      },
+      msg: "Data fetched successfully",
+    });
   } catch (e) {
-    return failResponse("Something went wrong");
+    console.log(e);
+    return res.status(500).json({ msg: "Something went wrong", error: e.message });
   }
 };
 
@@ -424,9 +387,7 @@ function updateReferralCountnew(users) {
       users.forEach((u) => {
         if (u.referral_user_id === user.id) {
           if (user.referral_user_id !== null) {
-            if (
-              !user.directReferrals.some((referral) => referral.c_id === u.id)
-            ) {
+            if (!user.directReferrals.some((referral) => referral.c_id === u.id)) {
               user.directReferrals.push({
                 user_name: u.full_name,
                 mobile: u.mobile,
@@ -478,13 +439,12 @@ function updateReferralCountnew(users) {
 
   users.forEach((user) => {
     user.count = countMap.hasOwnProperty(user.id) ? countMap[user.id] : 0;
-    user.teamcount = teamCountMap.hasOwnProperty(user.id)
-      ? teamCountMap[user.id]
-      : 0;
+    user.teamcount = teamCountMap.hasOwnProperty(user.id) ? teamCountMap[user.id] : 0;
   });
 
   return users;
 }
+
 
 exports.betPlaceJackPod = async (req, res) => {
   const { userid, amount, gameid, number } = req.body;
@@ -541,5 +501,3 @@ exports.gameHistoryJackPod = async (req, res) => {
       return failMsg("something went wrong in data fetching game history");
     });
 };
-
-
