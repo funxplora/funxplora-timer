@@ -4,22 +4,17 @@ const {
   oneMinColorWinning2min,
   oneMinColorWinning3sec,
   queryDb,
-  jackPodClearBet,
-  getTransactionidForJackPod,
-  updateMediatorTableJackPod,
   oneMinTrxSendReleasNumber,
   oneThreeTrxSendReleasNumber,
   oneFiveTrxSendReleasNumber,
-  randomStr,
 } = require("../helper/adminHelper");
 const moment = require("moment");
 const soment = require("moment-timezone");
 const { default: axios } = require("axios");
-const { failResponse, failMsg } = require("../helper/helperResponse");
-var sql = require("../config/db.config");
-const { query } = require("express");
+const { failMsg } = require("../helper/helperResponse");
+const io = require("../config/io.config");
 
-exports.generatedTimeEveryAfterEveryOneMin = (io) => {
+exports.generatedTimeEveryAfterEveryOneMin = () => {
   const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date();
     const timeToSend =
@@ -34,7 +29,7 @@ exports.generatedTimeEveryAfterEveryOneMin = (io) => {
   });
 };
 
-exports.generatedTimeEveryAfterEveryThreeMin = (io) => {
+exports.generatedTimeEveryAfterEveryThreeMin = () => {
   let min = 2;
   const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
@@ -51,7 +46,7 @@ exports.generatedTimeEveryAfterEveryThreeMin = (io) => {
   });
 };
 
-exports.generatedTimeEveryAfterEveryFiveMin = (io) => {
+exports.generatedTimeEveryAfterEveryFiveMin = () => {
   let min = 4;
   const job = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
@@ -73,7 +68,7 @@ exports.generatedTimeEveryAfterEveryFiveMin = (io) => {
   });
 };
 
-exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
+exports.generatedTimeEveryAfterEveryOneMinTRX = () => {
   let oneMinTrxJob = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date();
     const timeToSend =
@@ -81,6 +76,7 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
         ? 60 - currentTime.getSeconds()
         : currentTime.getSeconds();
     io.emit("onemintrx", timeToSend);
+
     if (timeToSend === 9) {
       const datetoAPISend = parseInt(new Date().getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
@@ -133,7 +129,7 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
   });
 };
 
-exports.generatedTimeEveryAfterEveryThreeMinTRX = (io) => {
+exports.generatedTimeEveryAfterEveryThreeMinTRX = () => {
   let min = 2;
   let twoMinTrxJob = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
@@ -196,7 +192,7 @@ exports.generatedTimeEveryAfterEveryThreeMinTRX = (io) => {
   });
 };
 
-exports.generatedTimeEveryAfterEveryFiveMinTRX = (io) => {
+exports.generatedTimeEveryAfterEveryFiveMinTRX = () => {
   let min = 4;
   let threeMinTrxJob = schedule.schedule("* * * * * *", function () {
     const currentTime = new Date().getSeconds(); // Get the current time
@@ -306,18 +302,26 @@ exports.getPromotionData = async (req, res) => {
     const promises = [];
     for (let i = 1; i <= 6; i++) {
       if (new_data.teamMembersByLevel[`level_${i}`]?.length > 0) {
-        let levelIds = new_data.teamMembersByLevel[`level_${i}`].map((k) => k.id);
+        let levelIds = new_data.teamMembersByLevel[`level_${i}`].map(
+          (k) => k.id
+        );
         const query = `SELECT SUM(tr15_amt) AS total_amount, COUNT(*) AS total_member
           FROM tr15_fund_request
           WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
-          ${levelIds.length > 0 ? `tr15_uid IN (${levelIds.join(",")})` : "1 = 0"}`;
+          ${
+            levelIds.length > 0
+              ? `tr15_uid IN (${levelIds.join(",")})`
+              : "1 = 0"
+          }`;
 
-        const promise = queryDb(query, []).then((resultteamamount) => {
-          return resultteamamount[0]?.total_amount || 0;
-        }).catch((err) => {
-          console.log(err);
-          return 0;
-        });
+        const promise = queryDb(query, [])
+          .then((resultteamamount) => {
+            return resultteamamount[0]?.total_amount || 0;
+          })
+          .catch((err) => {
+            console.log(err);
+            return 0;
+          });
 
         promises.push(promise);
       } else {
@@ -331,14 +335,22 @@ exports.getPromotionData = async (req, res) => {
     const directQuery = `SELECT SUM(tr15_amt) AS total_amount, COUNT(DISTINCT tr15_uid) AS total_member 
       FROM tr15_fund_request 
       WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
-      ${direct_ids.length > 0 ? `tr15_uid IN (${direct_ids.join(",")})` : "1 = 0"}`;
+      ${
+        direct_ids.length > 0
+          ? `tr15_uid IN (${direct_ids.join(",")})`
+          : "1 = 0"
+      }`;
 
     const directResult = await queryDb(directQuery, []);
 
     const indirectQuery = `SELECT SUM(tr15_amt) AS total_amount, COUNT(DISTINCT tr15_uid) AS total_member 
       FROM tr15_fund_request 
       WHERE tr15_status = 'Success' AND tr15_depo_type = 'Winzo' AND 
-      ${indirect_ids.length > 0 ? `tr15_uid IN (${indirect_ids.join(",")})` : "1 = 0"}`;
+      ${
+        indirect_ids.length > 0
+          ? `tr15_uid IN (${indirect_ids.join(",")})`
+          : "1 = 0"
+      }`;
 
     const indirectResult = await queryDb(indirectQuery, []);
 
@@ -360,7 +372,9 @@ exports.getPromotionData = async (req, res) => {
     });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ msg: "Something went wrong", error: e.message });
+    return res
+      .status(500)
+      .json({ msg: "Something went wrong", error: e.message });
   }
 };
 
@@ -387,7 +401,9 @@ function updateReferralCountnew(users) {
       users.forEach((u) => {
         if (u.referral_user_id === user.id) {
           if (user.referral_user_id !== null) {
-            if (!user.directReferrals.some((referral) => referral.c_id === u.id)) {
+            if (
+              !user.directReferrals.some((referral) => referral.c_id === u.id)
+            ) {
               user.directReferrals.push({
                 user_name: u.full_name,
                 mobile: u.mobile,
@@ -439,12 +455,13 @@ function updateReferralCountnew(users) {
 
   users.forEach((user) => {
     user.count = countMap.hasOwnProperty(user.id) ? countMap[user.id] : 0;
-    user.teamcount = teamCountMap.hasOwnProperty(user.id) ? teamCountMap[user.id] : 0;
+    user.teamcount = teamCountMap.hasOwnProperty(user.id)
+      ? teamCountMap[user.id]
+      : 0;
   });
 
   return users;
 }
-
 
 exports.betPlaceJackPod = async (req, res) => {
   const { userid, amount, gameid, number } = req.body;
@@ -464,6 +481,102 @@ exports.betPlaceJackPod = async (req, res) => {
     .catch((e) => {
       return failMsg("Something went wrong in bet placing");
     });
+};
+const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
+  let min = 4;
+  let sec = 60;
+  let jackpodTrxJob = schedule.schedule("* * * * * *", async function () {
+    // const currentTime = new Date().getSeconds(); // Get the current time
+    const currentTime = sec;
+    sec = sec - 1;
+    if (sec < 0) {
+      sec = 59;
+    }
+    const timeToSend = sec;
+    io.emit("fivemintrxjackpod", `${min}_${timeToSend}`);
+    if (min === 0 && timeToSend === 6) {
+      const datetoAPISend = parseInt(new Date().getTime().toString());
+      const actualtome = soment.tz("Asia/Kolkata");
+      const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
+
+      //////////////////// get transaction id /////////////
+      await getTransactionidForJackPod([])
+        .then(async (result) => {
+          //////////////////// get manual result ///////////////////
+          const trans_id = result?.[0]?.tr_tranaction_id;
+          const get_result_for_transid = `SELECT result FROM trx_manual_result where tr_type = ? AND trans_id = ?;`;
+          await queryDb(get_result_for_transid, [
+            4,
+            String(Number(trans_id) + 1),
+          ])
+            .then((result) => {
+              const result_arrray = [2002, 1000, 3002, 3001, 2001, 2005, 2004];
+              let result_number =
+                result?.[0]?.result ||
+                result_arrray[Math.floor(Math.random() * result_arrray.length)];
+              setTimeout(async () => {
+                const query = `CALL sp_insert_trx_five_min_jackpod_result(?, ?, ?, ?, ?, ?, ?)`;
+                await queryDb(query, [
+                  result_number,
+                  String(moment(time).format("HH:mm:ss")),
+                  4,
+                  `**${randomStr(4, "0123456789abcdefghijklmnopqrstuvwxyz")}`,
+                  JSON.stringify(
+                    randomStr(10, "0123456789abcdefghijklmnopqrstuvwxyz")
+                  ),
+                  `${randomStr(
+                    10,
+                    "0123456789abcdefghijklmnopqrstuvwxyz"
+                  )?.slice(-5)}`,
+                  randomStr(8, "0123456789"),
+                ])
+                  .then((result) => {})
+                  .catch((e) => {
+                    console.log(e);
+                  });
+
+                ////////////////////// clear bet ////////////
+                await jackPodClearBet([String(result_number)])
+                  .then((result) => {})
+                  .catch((e) => {
+                    console.log(e);
+                  });
+                //////////// update mediator table //////////////////////
+                await updateMediatorTableJackPod([0, 0])
+                  .then((result) => {})
+                  .catch((e) => {
+                    console.log(e);
+                  });
+              }, [1000]);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+    if (currentTime === 0) {
+      min--;
+      if (min < 0) {
+        jackpodTrxJob?.cancel();
+        min = 0;
+        sec = 0;
+      } // Reset min to 4 when it reaches 0
+    }
+  });
+};
+
+exports.jackpodResult = async (req, res) => {
+  try {
+    generatedTimeEveryAfterEveryFiveMinTRXJackPod();
+    return res.status(200)?.json({
+      msg: "APi hit successfully",
+    });
+  } catch (e) {
+    console.log("error in end point function", e);
+  }
 };
 
 exports.myHistoryJackPod = async (req, res) => {
@@ -494,6 +607,36 @@ exports.gameHistoryJackPod = async (req, res) => {
     .then((result) => {
       return res.status(200).json({
         msg: "Recorf get successfully",
+        data: result,
+      });
+    })
+    .catch((e) => {
+      return failMsg("something went wrong in data fetching game history");
+    });
+};
+exports.chnagePassWord = async (req, res) => {
+  const { userid, old_pass, new_pass, confirm_new_pass } = req.body;
+  console.log(userid, old_pass, new_pass, confirm_new_pass);
+  if (!userid || !old_pass || !new_pass || !confirm_new_pass)
+    return res.status(401).json({
+      msg: "Everything is requied!",
+      error: true,
+    });
+  if (new_pass !== confirm_new_pass)
+    return res.status(401).json({
+      msg: "Password and new password should be same.",
+      error: true,
+    });
+
+  const query = "UPDATE user SET password = ? WHERE id = ? AND password = ?;";
+  await queryDb(query, [String(new_pass), Number(userid), String(old_pass)])
+    .then((result) => {
+      if (result?.length === 0)
+        return res.status(401).json({
+          msg: "Your old password is wrong!",
+        });
+      return res.status(200).json({
+        msg: "Password updated successfully",
         data: result,
       });
     })
