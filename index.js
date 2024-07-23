@@ -55,10 +55,10 @@ if (x) {
     secondsUntilNextMinute
   );
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryOneMinTRX();
-    allroutes.generatedTimeEveryAfterEveryOneMin();
-    allroutes.generatedTimeEveryAfterEveryThreeMin();
-    allroutes.generatedTimeEveryAfterEveryFiveMin();
+    // allroutes.generatedTimeEveryAfterEveryOneMinTRX();
+    // allroutes.generatedTimeEveryAfterEveryOneMin();
+    // allroutes.generatedTimeEveryAfterEveryThreeMin();
+    // allroutes.generatedTimeEveryAfterEveryFiveMin();
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -77,11 +77,30 @@ if (trx) {
   console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryThreeMinTRX();
-    allroutes.generatedTimeEveryAfterEveryFiveMinTRX();
+    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX();
+    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX();
     trx = false;
   }, delay);
 }
+
+const jackpodResult = async (req, res) => {
+  try {
+    allroutes.generatedTimeEveryAfterEveryFiveMinTRXJackPod(io);
+    return res.status(200)?.json({
+      msg: "APi hit successfully",
+    });
+  } catch (e) {
+    console.log("error in end point function", e);
+  }
+};
+
+app.get("/api/v1/get-jackpod-result", jackpodResult);
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    msg: "Server is running on port 2343",
+  });
+});
 
 httpServer.listen(PORT, () => {
   console.log("Server listening on port", PORT);

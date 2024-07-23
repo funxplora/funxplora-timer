@@ -473,16 +473,17 @@ exports.betPlaceJackPod = async (req, res) => {
     "CALL trx_bet_placing_jack_pod(?,?,?,?, @result_msg); SELECT @result_msg;";
   await queryDb(query, [String(userid), 4, String(amount), String(number)])
     .then((result) => {
-      return res.status(500).json({
-        msg: "Something went wrong",
-        err: err,
+      return res.status(200).json({
+        msg: result?.[1]?.[0]?.["@result_msg"],
       });
     })
     .catch((e) => {
       return failMsg("Something went wrong in bet placing");
     });
 };
-const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
+
+exports.generatedTimeEveryAfterEveryFiveMinTRXJackPod = (io) => {
+  console.log("HIiiiiiiiii");
   let min = 4;
   let sec = 60;
   let jackpodTrxJob = schedule.schedule("* * * * * *", async function () {
@@ -494,12 +495,13 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
     }
     const timeToSend = sec;
     io.emit("fivemintrxjackpod", `${min}_${timeToSend}`);
+    console.log(`${min}_${timeToSend}`);
     if (min === 0 && timeToSend === 6) {
       const datetoAPISend = parseInt(new Date().getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
       const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
 
-      //////////////////// get transaction id /////////////
+      //////////////////// get transaction id /////////////////////
       await getTransactionidForJackPod([])
         .then(async (result) => {
           //////////////////// get manual result ///////////////////
@@ -568,16 +570,16 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
   });
 };
 
-exports.jackpodResult = async (req, res) => {
-  try {
-    generatedTimeEveryAfterEveryFiveMinTRXJackPod();
-    return res.status(200)?.json({
-      msg: "APi hit successfully",
-    });
-  } catch (e) {
-    console.log("error in end point function", e);
-  }
-};
+// exports.jackpodResult = async (req, res) => {
+//   try {
+//     generatedTimeEveryAfterEveryFiveMinTRXJackPod();
+//     return res.status(200)?.json({
+//       msg: "APi hit successfully",
+//     });
+//   } catch (e) {
+//     console.log("error in end point function", e);
+//   }
+// };
 
 exports.myHistoryJackPod = async (req, res) => {
   const { userid } = req.query;
@@ -643,4 +645,202 @@ exports.chnagePassWord = async (req, res) => {
     .catch((e) => {
       return failMsg("something went wrong in data fetching game history");
     });
+};
+
+exports.getGameHistory = async (req, res) => {
+  const { gameid, limit } = req.query;
+
+  if (!gameid || !limit) {
+    return res.status(400).json({
+      // Changed to 400 for bad request
+      msg: "gameid and limit are required",
+    });
+  }
+
+  const num_gameid = Number(gameid);
+  const num_limit = Number(limit);
+
+  if (typeof num_gameid !== "number" || typeof num_limit !== "number") {
+    return res.status(400).send("gameid and limit should be numbers");
+  }
+  try {
+    const query =
+      "SELECT * FROM tr42_win_slot WHERE tr41_packtype = ? ORDER BY tr_transaction_id DESC LIMIT 200";
+    await queryDb(query, [Number(num_gameid)])
+      .then((result) => {
+        return res.status(200).json({
+          msg: "Data fetched successfully",
+          result: result,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+exports.getMyHistory = async (req, res) => {
+  const { gameid, userid } = req.query;
+
+  if (!gameid || !userid) {
+    return res.status(400).json({
+      // Changed to 400 for bad request
+      msg: "gameid and userid are required",
+    });
+  }
+  const num_gameid = Number(gameid);
+  const num_userid = Number(userid);
+
+  if (typeof num_gameid !== "number" || typeof num_userid !== "number") {
+    return res.status(400).send("gameid and limit should be numbers");
+  }
+  try {
+    let query = "";
+    if (num_gameid === 1) {
+      query = `SELECT *,tr42_win_slot.tr41_slot_id AS number_result FROM trx_colour_bet LEFT JOIN tr42_win_slot ON trx_colour_bet.gamesno = tr42_win_slot.tr_transaction_id WHERE trx_colour_bet.userid = ? AND trx_colour_bet.gameid = 1
+            ORDER BY 
+            trx_colour_bet.gamesno DESC 
+            LIMIT 100;`;
+    } else if (num_gameid === 2) {
+      query = `SELECT *,tr42_win_slot.tr41_slot_id AS number_result FROM trx_colour_bet LEFT JOIN tr42_win_slot ON trx_colour_bet.gamesno = tr42_win_slot.tr_transaction_id WHERE trx_colour_bet.userid = ? AND trx_colour_bet.gameid = 2
+            ORDER BY 
+            trx_colour_bet.gamesno DESC 
+            LIMIT 100;`;
+    } else {
+      query = `SELECT *,tr42_win_slot.tr41_slot_id AS number_result FROM trx_colour_bet LEFT JOIN tr42_win_slot ON trx_colour_bet.gamesno = tr42_win_slot.tr_transaction_id WHERE trx_colour_bet.userid = ? AND trx_colour_bet.gameid = 3
+            ORDER BY 
+            trx_colour_bet.gamesno DESC 
+            LIMIT 100;`;
+    }
+
+    query !== "" &&
+      (await queryDb(query, [Number(num_userid)])
+        .then((result) => {
+          return res.status(200).json({
+            msg: "Data fetched successfully",
+            data: result,
+          });
+        })
+        .catch((e) => {
+          return res.status(500).json({
+            msg: `Something went wrong api calling`,
+          });
+        }));
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+exports.placeBetTrx = async (req, res) => {
+  const { amount, gameid, gamesnio, number, userid } = req.body;
+  if (gamesnio && Number(gamesnio) <= 1) {
+    return res.status(200).json({
+      msg: `Refresh your page may be your game history not updated.`,
+    });
+  }
+
+  if (!amount || !gameid || !gamesnio || !number || !userid)
+    return res.status(200).json({
+      msg: `Everything is required`,
+    });
+
+  if (userid && Number(userid) <= 0) {
+    return res.status(200).json({
+      msg: `Please refresh your page`,
+    });
+  }
+
+  if (Number(amount) <= 0)
+    return res.status(200).json({
+      msg: `Amount should be grater or equal to 1.`,
+    });
+  if (gameid && Number(gameid) <= 0)
+    return res.status(200).json({
+      msg: `Type is not define`,
+    });
+  if (gameid && Number(gameid) >= 4)
+    return res.status(200).json({
+      msg: `Type is not define`,
+    });
+
+  try {
+    const query = `INSERT INTO trx_colour_bet(userid,amount,gameid,number,gamesno,totalamount,commission,status) 
+    VALUES(?,?,?,?,?,?,?,?)`;
+    await queryDb(query, [
+      String(userid),
+      String(amount),
+      Number(gameid),
+      String(number),
+      String(gamesnio),
+      String(Number(Number(amount) * 0.98)?.toFixed(2)),
+      String(Number(Number(amount) * 0.02)?.toFixed(2)),
+      "0",
+    ])
+      .then((newresult) => {
+        return res.status(200).json({
+          error: "200",
+          msg: "Bid Placed Successfully",
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+
+    const queryforIncomeDistrubution = `CALL sp_betting_bonus_upA_to_specific_level(?,?,?)`;
+    await queryDb(queryforIncomeDistrubution, [
+      Number(userid),
+      22,
+      Number(Number(amount) * 0.02)?.toFixed(2),
+    ])
+      .then((newresult) => {
+        return res.status(200).json({
+          error: "200",
+          msg: "Bid Placed Successfully",
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+exports.loginPage = async (req, res) => {
+  const { password, username } = req.body;
+  if (!password || !username)
+    return res.status(200).json({
+      msg: `Everything is required`,
+    });
+
+  try {
+    const query = `SELECT id FROM user WHERE email = ? OR mobile = ?  AND password = ?;`;
+    await queryDb(query, [username, username, password])
+      .then((newresult) => {
+        if (newresult?.length === 0) {
+          return res.status(200).json({
+            error: "400",
+            msg: "Credential not matches.",
+          });
+        }
+        return res.status(200).json({
+          UserID: newresult?.[0]?.id,
+          error: "200",
+          msg: "Login Successfully",
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
 };
