@@ -43,7 +43,10 @@ const clearBetOneMin = async () => {
         const get_actual_round = result?.[0]?.win_transactoin;
         //////////////////// query for get actual number /////////////////////////////
         const admin_se_result_aaya_hai = `SELECT number FROM colour_admin_result WHERE gameid = ? AND gamesno = ? LIMIT 1;`;
-        await queryDb(admin_se_result_aaya_hai, [1, String(get_actual_round+1)])
+        await queryDb(admin_se_result_aaya_hai, [
+          1,
+          String(Number(get_actual_round) + 1),
+        ])
           .then(async (result) => {
             const get_actual_result = result?.[0]?.number || -1;
             const query = `SELECT slot_num, mid_amount FROM wingo_mediator_table WHERE game_type = 1 AND mid_amount = (SELECT MIN(mid_amount) FROM wingo_mediator_table WHERE game_type = 1);`;
@@ -65,7 +68,7 @@ const clearBetOneMin = async () => {
                           Math.random() * create_array_for_random.length
                         )
                       ];
-                console.log(slot,get_actual_result,get_actual_round);
+                console.log(slot, get_actual_result, get_actual_round);
                 ///////// insert into ledger entry and this sp also clear the all result ///////////////////////
                 let clear_bet = "CALL wingo_insert_ledger_entry_one_min(?);";
                 await queryDb(clear_bet, [Number(slot)])
