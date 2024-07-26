@@ -43,7 +43,7 @@ const clearBetOneMin = async () => {
         const get_actual_round = result?.[0]?.win_transactoin;
         //////////////////// query for get actual number /////////////////////////////
         const admin_se_result_aaya_hai = `SELECT number FROM colour_admin_result WHERE gameid = ? AND gamesno = ? LIMIT 1;`;
-        await queryDb(admin_se_result_aaya_hai, [1, String(get_actual_round)])
+        await queryDb(admin_se_result_aaya_hai, [1, String(get_actual_round+1)])
           .then(async (result) => {
             const get_actual_result = result?.[0]?.number || -1;
             const query = `SELECT slot_num, mid_amount FROM wingo_mediator_table WHERE game_type = 1 AND mid_amount = (SELECT MIN(mid_amount) FROM wingo_mediator_table WHERE game_type = 1);`;
