@@ -10,14 +10,7 @@ const allroutes = require("./controller/index");
 const moment = require("moment");
 const soment = require("moment-timezone");
 const allRoutes = require("./routes/Routes");
-const {
-  jackPodClearBet,
-  updateMediatorTableJackPod,
-  randomStr,
-  queryDb,
-  getTransactionidForJackPod,
-} = require("./helper/adminHelper");
-const schedule = require("node-cron");
+const { randomStr, queryDb } = require("./helper/adminHelper");
 
 const io = new Server(httpServer, {
   cors: {
@@ -55,10 +48,10 @@ if (x) {
     secondsUntilNextMinute
   );
   setTimeout(() => {
-    // allroutes.generatedTimeEveryAfterEveryOneMinTRX();
-    // allroutes.generatedTimeEveryAfterEveryOneMin();
-    // allroutes.generatedTimeEveryAfterEveryThreeMin();
-    // allroutes.generatedTimeEveryAfterEveryFiveMin();
+    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
+    allroutes.generatedTimeEveryAfterEveryOneMin(io);
+    allroutes.generatedTimeEveryAfterEveryThreeMin(io);
+    allroutes.generatedTimeEveryAfterEveryFiveMin(io);
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -70,28 +63,30 @@ if (trx) {
   const currentMinute = nowIST.minutes();
   const currentSecond = nowIST.seconds();
 
-  const minutesRemaining = 60 - currentMinute - 1;
+  const minutesRemaining = 15 - currentMinute - 1;
   const secondsRemaining = 60 - currentSecond;
 
   const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
   console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX();
-    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX();
+    allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
+    allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
     trx = false;
   }, delay);
 }
 
 const jackpodResult = async (req, res) => {
-  try {
-    allroutes.generatedTimeEveryAfterEveryFiveMinTRXJackPod(io);
-    return res.status(200)?.json({
-      msg: "APi hit successfully",
-    });
-  } catch (e) {
-    console.log("error in end point function", e);
-  }
+  setTimeout(() => {
+    try {
+      allroutes.generatedTimeEveryAfterEveryFiveMinTRXJackPod(io);
+      return res.status(200)?.json({
+        msg: "APi hit successfully",
+      });
+    } catch (e) {
+      console.log("error in end point function", e);
+    }
+  }, 2000);
 };
 
 app.get("/api/v1/get-jackpod-result", jackpodResult);
