@@ -50,8 +50,8 @@ if (x) {
   setTimeout(() => {
     allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
     allroutes.generatedTimeEveryAfterEveryOneMin(io);
-    allroutes.generatedTimeEveryAfterEveryThreeMin(io);
-    allroutes.generatedTimeEveryAfterEveryFiveMin(io);
+    // allroutes.generatedTimeEveryAfterEveryThreeMin(io);
+    // allroutes.generatedTimeEveryAfterEveryFiveMin(io);
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
