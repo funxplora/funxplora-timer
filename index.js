@@ -70,8 +70,8 @@ if (trx) {
   console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
-    allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
     trx = false;
   }, delay);
 }
