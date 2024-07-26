@@ -61,39 +61,38 @@ const clearBetOneMin = async () => {
 
     get_actual_result = result?.[0]?.number || -1;
     const query = `SELECT slot_num, mid_amount FROM wingo_mediator_table WHERE game_type = 1 AND mid_amount = (SELECT MIN(mid_amount) FROM wingo_mediator_table WHERE game_type = 1);`;
-    get_actual_result !== -1 &&
-      (await queryDb(query, [])
-        .then(async (result) => {
-          let create_array_for_random = [];
-          if (result.length === 0) {
-            create_array_for_random = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-          } else {
-            result.forEach((element) => {
-              create_array_for_random.push(element.slot_num);
-            });
-          }
-          const slot =
-            get_actual_result >= 0
-              ? get_actual_result
-              : create_array_for_random[
-                  Math.floor(Math.random() * create_array_for_random.length)
-                ];
-          console.log(slot, get_actual_result, get_actual_round);
-          ///////// insert into ledger entry and this sp also clear the all result ///////////////////////
-          let clear_bet = "CALL wingo_insert_ledger_entry_one_min(?);";
-          await queryDb(clear_bet, [Number(slot)])
-            .then(async (result) => {})
-            .catch((e) => {
-              return res.status(500).json({
-                msg: `Something went wrong api calling`,
-              });
-            });
-        })
-        .catch((e) => {
-          return res.status(500).json({
-            msg: `Something went wrong api calling`,
+    await queryDb(query, [])
+      .then(async (result) => {
+        let create_array_for_random = [];
+        if (result.length === 0) {
+          create_array_for_random = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        } else {
+          result.forEach((element) => {
+            create_array_for_random.push(element.slot_num);
           });
-        }));
+        }
+        const slot =
+          get_actual_result >= 0
+            ? get_actual_result
+            : create_array_for_random[
+                Math.floor(Math.random() * create_array_for_random.length)
+              ];
+        console.log(slot, get_actual_result, get_actual_round);
+        ///////// insert into ledger entry and this sp also clear the all result ///////////////////////
+        let clear_bet = "CALL wingo_insert_ledger_entry_one_min(?);";
+        await queryDb(clear_bet, [Number(slot)])
+          .then(async (result) => {})
+          .catch((e) => {
+            return res.status(500).json({
+              msg: `Something went wrong api calling`,
+            });
+          });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
   } catch (e) {
     return failMsg("Something went worng in node api");
   }
