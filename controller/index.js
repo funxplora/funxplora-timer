@@ -73,7 +73,6 @@ const clearBetOneMin = async () => {
             : create_array_for_random[
                 Math.floor(Math.random() * create_array_for_random.length)
               ];
-        console.log(slot, get_actual_result, Number(get_actual_round + 1));
         ///////// insert into ledger entry and this sp also clear the all result ///////////////////////
         let clear_bet = "CALL wingo_insert_ledger_entry_one_min(?);";
         await queryDb(clear_bet, [Number(slot)])
@@ -270,7 +269,7 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
         : currentTime.getSeconds();
     io.emit("onemintrx", timeToSend);
 
-    if (timeToSend === 9) {
+    if (timeToSend === 6) {
       const datetoAPISend = parseInt(new Date().getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
       const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
@@ -369,7 +368,7 @@ exports.generatedTimeEveryAfterEveryThreeMinTRX = (io) => {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("threemintrx", `${min}_${timeToSend}`);
-    if (min === 0 && timeToSend === 9) {
+    if (min === 0 && timeToSend === 6) {
       const datetoAPISend = parseInt(new Date().getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
       const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
@@ -472,7 +471,7 @@ exports.generatedTimeEveryAfterEveryFiveMinTRX = (io) => {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("fivemintrx", `${min}_${timeToSend}`);
-    if (min === 0 && timeToSend === 9) {
+    if (min === 0 && timeToSend === 6) {
       const datetoAPISend = parseInt(new Date().getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
       const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
