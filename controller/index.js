@@ -1,12 +1,6 @@
 const schedule = require("node-cron");
 const {
-  oneMinColorWining,
-  oneMinColorWinning2min,
-  oneMinColorWinning3sec,
   queryDb,
-  oneMinTrxSendReleasNumber,
-  oneThreeTrxSendReleasNumber,
-  oneFiveTrxSendReleasNumber,
   functionToreturnDummyResult,
   jackPodClearBet,
   updateMediatorTableJackPod,
@@ -17,7 +11,6 @@ const moment = require("moment");
 const soment = require("moment-timezone");
 const { default: axios } = require("axios");
 const { failMsg } = require("../helper/helperResponse");
-const io = require("../config/io.config");
 
 exports.generatedTimeEveryAfterEveryOneMin = (io) => {
   const job = schedule.schedule("* * * * * *", function () {
@@ -106,6 +99,8 @@ exports.generatedTimeEveryAfterEveryThreeMin = (io) => {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("threemin", `${min}_${timeToSend}`);
+    console.log(`${min}_${timeToSend}`);
+
     if (min === 0 && timeToSend === 25) {
       // oneMinCheckResult2min();
       // oneMinColorWinning2min();
@@ -135,7 +130,7 @@ const clearBetThreeMin = async () => {
     let get_actual_result = -1;
     await queryDb(admin_se_result_aaya_hai, [
       2,
-      String(Number(get_actual_round + 1)),
+      String(Number(get_actual_round)+1),
     ])
       .then(async (result) => {
         get_actual_result = result?.[0]?.number || -1;
@@ -143,7 +138,6 @@ const clearBetThreeMin = async () => {
       .catch((e) => {
         console.log("Something went wrong in clear bet 1 min");
       });
-
     const query = `SELECT slot_num, mid_amount FROM wingo_mediator_table WHERE game_type = 2 AND mid_amount = (SELECT MIN(mid_amount) FROM wingo_mediator_table WHERE game_type = 2);`;
     await queryDb(query, [])
       .then(async (result) => {
@@ -222,7 +216,7 @@ const clearBetFiveMin = async () => {
     get_actual_round !== "" &&
       (await queryDb(admin_se_result_aaya_hai, [
         3,
-        String(Number(get_actual_round + 1)),
+        String(Number(get_actual_round)+1),
       ])
         .then(async (result) => {
           get_actual_result = result?.[0]?.number || -1;
@@ -1178,7 +1172,7 @@ exports.getBalance = async (req, res) => {
       msg: `User id should be in number`,
     });
   try {
-    const query = `SELECT cricket_wallet,wallet,winning_wallet FROM user WHERE id = ?;`;
+    const query = `SELECT cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name FROM user WHERE id = ?;`;
     await queryDb(query, [Number(num_gameid)])
       .then((newresult) => {
         if (newresult?.length === 0) {
@@ -1193,6 +1187,11 @@ exports.getBalance = async (req, res) => {
             cricket_wallet: newresult?.[0]?.cricket_wallet,
             wallet: newresult?.[0]?.wallet,
             winning: newresult?.[0]?.winning_wallet,
+            total_turnover: newresult?.[0]?.today_turnover,
+            username: newresult?.[0]?.username,
+            email: newresult?.[0]?.email,
+            referral_code: newresult?.[0]?.referral_code,
+            full_name: newresult?.[0]?.full_name,
           },
         });
       })
@@ -1372,5 +1371,35 @@ exports.gameHistoryWingo = async (req, res) => {
         }));
   } catch (e) {
     return failMsg("Something went worng in node api");
+  }
+};
+
+exports.getLevels = async (req, res) => {
+  try {
+    const { userid } = req.query;
+    if (!userid)
+      return res.status(201).json({
+        msg: "Please provide uesr id.",
+      });
+    const id_in_number = Number(userid);
+    if (typeof id_in_number !== "number")
+      return res.status(201).json({
+        msg: "Something went wrong.",
+      });
+    const query = `CALL sp_get_levels_data(?,?);`;
+    await queryDb(query, [Number(id_in_number), 6]) ///////////////////// second parameter should be (level+1)
+      .then((result) => {
+        res.status(200).json({
+          msg: "Data get successfully",
+          data: result?.[0],
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  } catch (e) {
+    res.status(500).json({
+      msg: "Something went wrong.",
+    });
   }
 };

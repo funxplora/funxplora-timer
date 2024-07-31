@@ -5,7 +5,6 @@ const {
   myHistoryJackPod,
   gameHistoryJackPod,
   chnagePassWord,
-  jackpodResult,
   getGameHistory,
   getMyHistory,
   placeBetTrx,
@@ -14,28 +13,31 @@ const {
   placeBetWingo,
   gameHistoryWingo,
   getBalance,
+  getLevels,
 } = require("../controller");
 const router = express.Router();
 
-router.get("/promotiondata", getPromotionData);
+////////////////// jack pot ///////////////////
 router.post("/place-bid-jackpod", betPlaceJackPod);
 router.get("/my-history-jackpod", myHistoryJackPod);
 router.get("/game-history-jackpod", gameHistoryJackPod);
-// router.get("/get-jackpod-result", jackpodResult);
-router.post("/change-password", chnagePassWord);
 
 ////////// trx ///////////////////
 router.get("/trx-auto-genrated-result", getGameHistory);
 router.get("/trx-getColourBets", getMyHistory);
 router.post("/trx-bet", placeBetTrx);
-router.post("/user_login", loginPage);
-router.get("/userwallet",getBalance );
 
 ////////   wingo api ///////////////////
 router.get("/getbet-game-results", myHistoryWingo); /// my history
 router.get("/colour_result", gameHistoryWingo); /// game history
 router.post("/bet", placeBetWingo); /// game history
 
-/////////////////////// wingo ///////////
+///////////////////// general api's ////////////////
+router.get("/userwallet",getBalance );
+router.post("/user_login", loginPage);
+router.post("/change-password", chnagePassWord);
+router.get("/promotiondata", getPromotionData);
+router.get("/get-level", getLevels);
+
 
 module.exports = router;
