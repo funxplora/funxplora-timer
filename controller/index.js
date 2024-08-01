@@ -1385,12 +1385,13 @@ exports.getLevels = async (req, res) => {
       return res.status(201).json({
         msg: "Something went wrong.",
       });
-    const query = `CALL sp_get_levels_data(?,?);`;
+    const query = `CALL sp_get_levels_data(?,?,@yesterday_income); SELECT @yesterday_income;`;
     await queryDb(query, [Number(id_in_number), 6]) ///////////////////// second parameter should be (level+1)
       .then((result) => {
         res.status(200).json({
           msg: "Data get successfully",
           data: result?.[0],
+          yesterday_income:result?.[2]?.[0]?.["@yesterday_income"]
         });
       })
       .catch((e) => {

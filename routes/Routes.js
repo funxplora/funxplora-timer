@@ -15,6 +15,7 @@ const {
   getBalance,
   getLevels,
 } = require("../controller");
+const { getPaymentGateway, getCallBack } = require("../controller/payment_gateway");
 const router = express.Router();
 
 ////////////////// jack pot ///////////////////
@@ -38,6 +39,8 @@ router.post("/user_login", loginPage);
 router.post("/change-password", chnagePassWord);
 router.get("/promotiondata", getPromotionData);
 router.get("/get-level", getLevels);
+router.post("/payment", getPaymentGateway);
+router.post("/call-back", getCallBack);
 
 
 module.exports = router;

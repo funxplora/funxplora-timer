@@ -11,6 +11,7 @@ const moment = require("moment");
 const soment = require("moment-timezone");
 const allRoutes = require("./routes/Routes");
 const { randomStr, queryDb } = require("./helper/adminHelper");
+const { getPaymentGateway } = require("./controller/payment_gateway");
 
 const io = new Server(httpServer, {
   cors: {
@@ -63,7 +64,7 @@ if (trx) {
   const currentMinute = nowIST.minutes();
   const currentSecond = nowIST.seconds();
 
-  const minutesRemaining = 45 - currentMinute - 1;
+  const minutesRemaining = 30 - currentMinute - 1;
   const secondsRemaining = 60 - currentSecond;
 
   const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
@@ -96,6 +97,8 @@ app.get("/", (req, res) => {
     msg: "Server is running on port 2343",
   });
 });
+
+
 
 httpServer.listen(PORT, () => {
   console.log("Server listening on port", PORT);
