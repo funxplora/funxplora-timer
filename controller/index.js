@@ -129,7 +129,7 @@ const clearBetThreeMin = async () => {
     let get_actual_result = -1;
     await queryDb(admin_se_result_aaya_hai, [
       2,
-      String(Number(get_actual_round)+1),
+      String(Number(get_actual_round) + 1),
     ])
       .then(async (result) => {
         get_actual_result = result?.[0]?.number || -1;
@@ -215,7 +215,7 @@ const clearBetFiveMin = async () => {
     get_actual_round !== "" &&
       (await queryDb(admin_se_result_aaya_hai, [
         3,
-        String(Number(get_actual_round)+1),
+        String(Number(get_actual_round) + 1),
       ])
         .then(async (result) => {
           get_actual_result = result?.[0]?.number || -1;
@@ -1132,7 +1132,7 @@ exports.loginPage = async (req, res) => {
     });
 
   try {
-    const query = `SELECT id FROM user WHERE email = ? OR mobile = ?  AND password = ?;`;
+    const query = `SELECT id FROM user WHERE (email = ? OR mobile = ?)  AND password = ?;`;
     await queryDb(query, [username, username, password])
       .then((newresult) => {
         if (newresult?.length === 0) {
@@ -1227,16 +1227,6 @@ exports.myHistoryWingo = async (req, res) => {
   }
   try {
     let query = "";
-    // if (num_gameid === 1) {
-    //   query =
-    //     "SELECT * , number_result.number AS number_result FROM `colour_bet` LEFT JOIN colour_results ON colour_bet.gamesno = colour_results.gamesno  WHERE colour_bet.gameid = 1 AND colour_bet.userid = ? ORDER BY colour_bet.gamesno DESC LIMIT 150;";
-    // } else if (num_gameid === 2) {
-    //   query =
-    //     "SELECT * , colour_results.number AS number_result FROM `colour_bet` LEFT JOIN colour_results ON colour_bet.gamesno = colour_results.gamesno  WHERE colour_bet.gameid = 2 AND colour_bet.userid = ? ORDER BY colour_bet.gamesno DESC LIMIT 150;";
-    // } else {
-    //   query =
-    //     "SELECT * , colour_results.number AS number_result FROM `colour_bet` LEFT JOIN colour_results ON colour_bet.gamesno = colour_results.gamesno  WHERE colour_bet.gameid = 3 AND colour_bet.userid = ? ORDER BY colour_bet.gamesno DESC LIMIT 150;";
-    // }
     if (num_gameid === 1) {
       query = `SELECT * FROM colour_bet WHERE gameid = 1 AND userid = ?  ORDER BY id DESC LIMIT 150;`;
     } else if (num_gameid === 2) {
@@ -1391,7 +1381,7 @@ exports.getLevels = async (req, res) => {
         res.status(200).json({
           msg: "Data get successfully",
           data: result?.[0],
-          yesterday_income:result?.[2]?.[0]?.["@yesterday_income"]
+          yesterday_income: result?.[2]?.[0]?.["@yesterday_income"],
         });
       })
       .catch((e) => {
@@ -1401,5 +1391,117 @@ exports.getLevels = async (req, res) => {
     res.status(500).json({
       msg: "Something went wrong.",
     });
+  }
+};
+
+exports.getDepositlHistory = async (req, res) => {
+  const { userid } = req.query;
+
+  if (!userid)
+    return res.status(200).json({
+      msg: `Everything is required`,
+    });
+
+  const num_userid = Number(userid);
+
+  if (typeof num_userid !== "number")
+    return res.status(200).json({
+      msg: `User id should be in number`,
+    });
+  try {
+    const query = `SELECT user_id,to_coin,amt,order_id,status,created_at,success_date FROM m05_fund_gateway WHERE user_id = ?;`;
+    await queryDb(query, [Number(num_userid)])
+      .then((newresult) => {
+        if (newresult?.length === 0) {
+          return res.status(200).json({
+            error: "400",
+            msg: "Something went wrong",
+          });
+        }
+        return res.status(200).json({
+          error: "200",
+          data: newresult,
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+
+exports.addUSDTAddress = async (req, res) => {
+  const { m_u_id, address } = req.body;
+  if (!m_u_id || !address)
+    return res.status(200).json({
+      msg: `Everything is required`,
+    });
+
+  const num_userid = Number(m_u_id);
+
+  if (typeof num_userid !== "number")
+    return res.status(200).json({
+      msg: `User id should be in number`,
+    });
+
+  try {
+    const query = `INSERT INTO coin_payment_address_record(userid,usdt_address) VALUES(?,?);`;
+    await queryDb(query, [Number(num_userid), String(address)])
+      .then((newresult) => {
+        if (newresult?.length === 0) {
+          return res.status(200).json({
+            error: "400",
+            msg: "Something went wrong",
+          });
+        }
+        return res.status(200).json({
+          error: "200",
+          msg: "Record saved successfully.",
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+
+exports.uddtAddressHistory = async (req, res) => {
+  const { m_u_id } = req.query;
+  if (!m_u_id)
+    return res.status(200).json({
+      msg: `Everything is required`,
+    });
+
+  const num_userid = Number(m_u_id);
+
+  if (typeof num_userid !== "number")
+    return res.status(200).json({
+      msg: `User id should be in number`,
+    });
+
+  try {
+    const query = `SELECT * FROM coin_payment_address_record WHERE userid = ?;`;
+    await queryDb(query, [Number(num_userid)])
+      .then((newresult) => {
+        return res.status(200).json({
+          error: "200",
+          msg: "Record saved successfully.",
+          data: newresult,
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
   }
 };

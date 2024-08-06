@@ -11,7 +11,6 @@ const moment = require("moment");
 const soment = require("moment-timezone");
 const allRoutes = require("./routes/Routes");
 const { randomStr, queryDb } = require("./helper/adminHelper");
-const { getPaymentGateway } = require("./controller/payment_gateway");
 
 const io = new Server(httpServer, {
   cors: {
@@ -76,7 +75,8 @@ if (trx) {
     trx = false;
   }, delay);
 }
-  
+
+
 const jackpodResult = async (req, res) => {
   setTimeout(() => {
     try {
@@ -92,14 +92,17 @@ const jackpodResult = async (req, res) => {
 //
 app.get("/api/v1/get-jackpod-result", jackpodResult);
 
+
+
+
 app.get("/", (req, res) => {
   res.status(200).json({
     msg: "Server is running on port 2343",
   });
 });
 
-
-
+const star = ""
+star.toUpperCase()
 httpServer.listen(PORT, () => {
   console.log("Server listening on port", PORT);
 });
