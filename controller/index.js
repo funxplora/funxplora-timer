@@ -1432,6 +1432,44 @@ exports.getDepositlHistory = async (req, res) => {
     return failMsg("Something went worng in node api");
   }
 };
+exports.getWithdrawlHistory = async (req, res) => {
+  const { userid } = req.query;
+
+  if (!userid)
+    return res.status(200).json({
+      msg: `Everything is required`,
+    });
+
+  const num_userid = Number(userid);
+
+  if (typeof num_userid !== "number")
+    return res.status(200).json({
+      msg: `User id should be in number`,
+    });
+  try {
+    const query = `SELECT * FROM tr12_withdrawal WHERE m_u_id = ?;`;
+    await queryDb(query, [Number(num_userid)])
+      .then((newresult) => {
+        if (newresult?.length === 0) {
+          return res.status(200).json({
+            error: "400",
+            msg: "Something went wrong",
+          });
+        }
+        return res.status(200).json({
+          error: "200",
+          data: newresult,
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
 
 exports.addUSDTAddress = async (req, res) => {
   const { m_u_id, address } = req.body;

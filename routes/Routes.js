@@ -17,6 +17,7 @@ const {
   getDepositlHistory,
   addUSDTAddress,
   uddtAddressHistory,
+  getWithdrawlHistory,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway, withdrawl_testing } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -45,6 +46,7 @@ router.get("/get-level", getLevels);
 router.post("/payment", getPaymentGateway);
 router.post("/call-back", getCallBack);
 router.get("/coin-payment-deposit-history", getDepositlHistory);
+router.get("/coin-payment-withdrawl-history", getWithdrawlHistory);
 router.post("/withdrawl-request", withdrawlRequest);
 router.post("/add-usdt-address", addUSDTAddress);
 router.get("/usdt-address-record", uddtAddressHistory);

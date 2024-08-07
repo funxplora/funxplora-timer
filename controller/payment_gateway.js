@@ -2,7 +2,7 @@ const Coinpayments = require("coinpayments");
 const { queryDb } = require("../helper/adminHelper");
 const moment = require("moment");
 const credentials = {
-  
+ 
 };
 exports.getPaymentGateway = async (req, res) => {
   const { amount, userid } = req.body;
@@ -251,7 +251,6 @@ exports.update_member_withdrawal_gatway = async (req, res) => {
         msg: "Please provide id.",
       });
     }
-   
 
     const client = new Coinpayments(credentials);
 
@@ -346,7 +345,7 @@ exports.withdrawlCallBack = async (req, res) => {
   try {
     const { id } = req.body;
     // const id = "CWIH7EYZI2I5I4JHYNE88VUPWS"
-    
+
     const client = new Coinpayments(credentials);
 
     const CoinpaymentsGetWithdrawalInfoOpts = {
