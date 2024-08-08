@@ -18,6 +18,7 @@ const {
   addUSDTAddress,
   uddtAddressHistory,
   getWithdrawlHistory,
+  getLevelIncome,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway, withdrawl_testing } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -52,6 +53,7 @@ router.post("/add-usdt-address", addUSDTAddress);
 router.get("/usdt-address-record", uddtAddressHistory);
 router.post("/withdrawlCallBack", withdrawlCallBack);
 router.get("/approve-by-admin", update_member_withdrawal_gatway);
+router.get("/level-income", getLevelIncome);
 
 
 module.exports = router;

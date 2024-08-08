@@ -2,7 +2,7 @@ const Coinpayments = require("coinpayments");
 const { queryDb } = require("../helper/adminHelper");
 const moment = require("moment");
 const credentials = {
-  
+ 
 };
 exports.getPaymentGateway = async (req, res) => {
   const { amount, userid } = req.body;
@@ -244,6 +244,9 @@ exports.withdrawlRequest = async (req, res) => {
 
 // should be approve from admin panel
 exports.update_member_withdrawal_gatway = async (req, res) => {
+  let res_to_send = "";
+  let status_code = 200;
+
   try {
     const { id } = req.query;
     if (!id) {
@@ -295,10 +298,12 @@ exports.update_member_withdrawal_gatway = async (req, res) => {
               const query_for_update_gateway_withdraw = `UPDATE gateway_withdraw SET status = ?,api_response = ? WHERE id =?;`;
               const par = [
                 "error",
-                JSON.stringify(response_of_mass_req),
+                JSON.stringify(response_of_mass_req || ""),
                 last_inserted_id,
               ];
               await queryDb(query_for_update_gateway_withdraw, par);
+              res_to_send = JSON.stringify(response_of_mass_req);
+              status_code = 201;
             } else {
               const query_for_update_tr12_withdrawal = `UPDATE tr12_withdrawal SET m_w_crypto_status = ?, m_w_status = ? WHERE w_id = ?;`;
               const parameter = [3, 2, Number(id)];
@@ -319,13 +324,15 @@ exports.update_member_withdrawal_gatway = async (req, res) => {
 
               const query_for_update_gateway_withdraw = `UPDATE gateway_withdraw SET api_response = ?, trans_id = ?, info_response = ?, last_status_update = ? WHERE id = ?;`;
               const parameters = [
-                JSON.stringify(response_of_mass_req),
+                JSON.stringify(response_of_mass_req || ""),
                 response_of_mass_req?.wd1?.id,
-                JSON.stringify(response),
+                JSON.stringify(response || ""),
                 moment(Date.now())?.format("YYYY-MM-DD HH:mm:ss"),
                 last_inserted_id,
               ];
               await queryDb(query_for_update_gateway_withdraw, parameters);
+              res_to_send = JSON.stringify(response || "");
+              status_code = 200;
             }
           }
         }
@@ -334,7 +341,10 @@ exports.update_member_withdrawal_gatway = async (req, res) => {
         console.log("Error in get all from tr12_withdraw", e);
       });
     return res.status(200).json({
-      msg: "Request Added in Coinpayment it will take 1-2 hour to update your wallet.",
+      status: status_code,
+      msg:
+        res_to_send ||
+        "Request Added in Coinpayment it will take 1-2 hour to update your wallet.",
     });
   } catch (e) {
     console.log("Error in massWithdrawilRequest");

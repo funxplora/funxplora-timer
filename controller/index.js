@@ -6,6 +6,8 @@ const {
   updateMediatorTableJackPod,
   getTransactionidForJackPod,
   randomStr,
+  getAlredyPlacedBet,
+  getAlredyPlacedBetOnWingo,
 } = require("../helper/adminHelper");
 const moment = require("moment");
 const soment = require("moment-timezone");
@@ -1056,6 +1058,75 @@ exports.getMyHistory = async (req, res) => {
     return failMsg("Something went worng in node api");
   }
 };
+// exports.placeBetTrx = async (req, res) => {
+//   const { amount, gameid, gamesnio, number, userid } = req.body;
+//   if (gamesnio && Number(gamesnio) <= 1) {
+//     return res.status(200).json({
+//       msg: `Refresh your page may be your game history not updated.`,
+//     });
+//   }
+
+//   if (!amount || !gameid || !gamesnio || !String(number) || !userid)
+//     return res.status(200).json({
+//       msg: `Everything is required`,
+//     });
+
+//   if (userid && Number(userid) <= 0) {
+//     return res.status(200).json({
+//       msg: `Please refresh your page`,
+//     });
+//   }
+
+//   if (Number(amount) <= 0)
+//     return res.status(200).json({
+//       msg: `Amount should be grater or equal to 1.`,
+//     });
+//   if (gameid && Number(gameid) <= 0)
+//     return res.status(200).json({
+//       msg: `Type is not define`,
+//     });
+//   if (gameid && Number(gameid) >= 4)
+//     return res.status(200).json({
+//       msg: `Type is not define`,
+//     });
+
+//   const num_gameid = Number(gameid);
+
+//   if (typeof num_gameid !== "number")
+//     return res.status(200).json({
+//       msg: `Game id should be in number`,
+//     });
+//   try {
+//     const query = `CALL trx_bet_placed(?, ?, ?, ?, @result_msg); SELECT @result_msg;`;
+//     try {
+//       const newresult = await queryDb(query, [
+//         String(userid),
+//         Number(num_gameid),
+//         String(amount),
+//         String(number),
+//       ])
+//         .then((result) => {
+//           res.status(200).json({
+//             error: "200",
+//             msg: result?.[1]?.[0]?.["@result_msg"],
+//           });
+//         })
+//         .catch((e) => {
+//           return res.status(500).json({
+//             msg: "Something went wrong with the API call",
+//           });
+//         });
+//     } catch (error) {
+//       console.error("Error:", error);
+//       return res.status(500).json({
+//         msg: "Something went wrong with the API call",
+//       });
+//     }
+//   } catch (e) {
+//     return failMsg("Something went worng in node api");
+//   }
+// };
+
 exports.placeBetTrx = async (req, res) => {
   const { amount, gameid, gamesnio, number, userid } = req.body;
   if (gamesnio && Number(gamesnio) <= 1) {
@@ -1094,36 +1165,87 @@ exports.placeBetTrx = async (req, res) => {
     return res.status(200).json({
       msg: `Game id should be in number`,
     });
-  try {
-    const query = `CALL trx_bet_placed(?, ?, ?, ?, @result_msg); SELECT @result_msg;`;
-    try {
-      const newresult = await queryDb(query, [
-        String(userid),
-        Number(num_gameid),
-        String(amount),
-        String(number),
-      ])
-        .then((result) => {
-          res.status(200).json({
-            error: "200",
-            msg: result?.[1]?.[0]?.["@result_msg"],
-          });
-        })
-        .catch((e) => {
+
+  let get_round = "";
+  if (num_gameid === 1) {
+    get_round = `SELECT tr_tranaction_id FROM tr_game WHERE tr_id = 4;`;
+  } else if (num_gameid === 2) {
+    get_round = `SELECT tr_tranaction_id FROM tr_game WHERE tr_id = 5;`;
+  } else {
+    get_round = `SELECT tr_tranaction_id FROM tr_game WHERE tr_id = 6;`;
+  }
+  const get_round_number =
+    get_round !== "" &&
+    (await queryDb(get_round, [])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Something went wrong in get round.");
+      }));
+
+  await getAlredyPlacedBet([
+    String(Number(get_round_number?.[0]?.tr_tranaction_id) + 1),
+    String(userid),
+    num_gameid,
+  ]).then(async (result) => {
+    if (
+      [10, 20, 30]?.includes(Number(number)) &&
+      result?.find((i) => [10, 20, 30]?.includes(Number(i?.number)))
+    ) {
+      return res.status(200).json({
+        msg: `Already Placed on color`,
+      });
+    } else if (
+      [40, 50]?.includes(Number(number)) &&
+      result?.find((i) => [40, 50]?.includes(Number(i?.number)))
+    ) {
+      return res.status(200).json({
+        msg: `Already placed on big/small`,
+      });
+    } else if (
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]?.includes(Number(number)) &&
+      result?.filter((i) =>
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]?.includes(Number(i?.number))
+      )?.length > 2
+    ) {
+      return res.status(200).json({
+        msg: `You have already placed 3  bets.`,
+      });
+    } else {
+      try {
+        const query = `CALL trx_bet_placed(?, ?, ?, ?, @result_msg); SELECT @result_msg;`;
+        try {
+          const newresult = await queryDb(query, [
+            String(userid),
+            Number(num_gameid),
+            String(amount),
+            String(number),
+          ])
+            .then((result) => {
+              res.status(200).json({
+                error: "200",
+                msg: result?.[1]?.[0]?.["@result_msg"],
+              });
+            })
+            .catch((e) => {
+              return res.status(500).json({
+                msg: "Something went wrong with the API call",
+              });
+            });
+        } catch (error) {
+          console.error("Error:", error);
           return res.status(500).json({
             msg: "Something went wrong with the API call",
           });
-        });
-    } catch (error) {
-      console.error("Error:", error);
-      return res.status(500).json({
-        msg: "Something went wrong with the API call",
-      });
+        }
+      } catch (e) {
+        return failMsg("Something went worng in node api");
+      }
     }
-  } catch (e) {
-    return failMsg("Something went worng in node api");
-  }
+  });
 };
+
 exports.loginPage = async (req, res) => {
   const { password, username } = req.body;
   if (!password || !username)
@@ -1132,19 +1254,13 @@ exports.loginPage = async (req, res) => {
     });
 
   try {
-    const query = `SELECT id FROM user WHERE (email = ? OR mobile = ?)  AND password = ?;`;
+    // const query = `SELECT id FROM user WHERE (email = ? OR mobile = ?)  AND password = ? AND is_blocked_status = 1;`;
+    const query = `CALL sp_for_login_user(?,?,?,@user_id,@msg); SELECT @user_id,@msg;`;
     await queryDb(query, [username, username, password])
       .then((newresult) => {
-        if (newresult?.length === 0) {
-          return res.status(200).json({
-            error: "400",
-            msg: "Credential not matches.",
-          });
-        }
         return res.status(200).json({
-          UserID: newresult?.[0]?.id,
-          error: "200",
-          msg: "Login Successfully",
+          msg: newresult?.[1]?.[0]?.["@msg"],
+          UserID: newresult?.[1]?.[0]?.["@user_id"],
         });
       })
       .catch((error) => {
@@ -1285,35 +1401,84 @@ exports.placeBetWingo = async (req, res) => {
       msg: "Data type of number should be number.",
     });
 
-  try {
-    const query = `CALL wingo_bet_placed(?, ?, ?, ?, @result_msg); SELECT @result_msg;`;
-    try {
-      const newresult = await queryDb(query, [
-        String(userid),
-        Number(gameId),
-        String(amount),
-        String(number),
-      ])
-        .then((result) => {
-          res.status(200).json({
-            error: "200",
-            msg: result?.[1]?.[0]?.["@result_msg"],
-          });
-        })
-        .catch((e) => {
+  let get_round = "";
+  if (Number(gameId) === 1) {
+    get_round = `SELECT win_transactoin FROM wingo_round_number WHERE win_id = 1;`;
+  } else if (Number(gameId) === 2) {
+    get_round = `SELECT win_transactoin FROM wingo_round_number WHERE win_id = 2;`;
+  } else {
+    get_round = `SELECT win_transactoin FROM wingo_round_number WHERE win_id = 3;`;
+  }
+  const get_round_number =
+    get_round !== "" &&
+    (await queryDb(get_round, [])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Something went wrong in get round.");
+      }));
+
+  await getAlredyPlacedBetOnWingo([
+    String(Number(get_round_number?.[0]?.win_transactoin) + 1),
+    String(userid),
+    Number(gameId),
+  ]).then(async (result) => {
+    if (
+      [10, 20, 30]?.includes(Number(number)) &&
+      result?.find((i) => [10, 20, 30]?.includes(Number(i?.number)))
+    ) {
+      return res.status(200).json({
+        msg: `Already Placed on color`,
+      });
+    } else if (
+      [40, 50]?.includes(Number(number)) &&
+      result?.find((i) => [40, 50]?.includes(Number(i?.number)))
+    ) {
+      return res.status(200).json({
+        msg: `Already placed on big/small`,
+      });
+    } else if (
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]?.includes(Number(number)) &&
+      result?.filter((i) =>
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]?.includes(Number(i?.number))
+      )?.length > 2
+    ) {
+      return res.status(200).json({
+        msg: `You have already placed 3  bets.`,
+      });
+    } else {
+      try {
+        const query = `CALL wingo_bet_placed(?, ?, ?, ?, @result_msg); SELECT @result_msg;`;
+        try {
+          const newresult = await queryDb(query, [
+            String(userid),
+            Number(gameId),
+            String(amount),
+            String(number),
+          ])
+            .then((result) => {
+              res.status(200).json({
+                error: "200",
+                msg: result?.[1]?.[0]?.["@result_msg"],
+              });
+            })
+            .catch((e) => {
+              return res.status(500).json({
+                msg: "Something went wrong with the API call",
+              });
+            });
+        } catch (error) {
+          console.error("Error:", error);
           return res.status(500).json({
             msg: "Something went wrong with the API call",
           });
-        });
-    } catch (error) {
-      console.error("Error:", error);
-      return res.status(500).json({
-        msg: "Something went wrong with the API call",
-      });
+        }
+      } catch (e) {
+        return failMsg("Something went worng in node api");
+      }
     }
-  } catch (e) {
-    return failMsg("Something went worng in node api");
-  }
+  });
 };
 
 exports.gameHistoryWingo = async (req, res) => {
@@ -1375,13 +1540,15 @@ exports.getLevels = async (req, res) => {
       return res.status(201).json({
         msg: "Something went wrong.",
       });
-    const query = `CALL sp_get_levels_data(?,?,@yesterday_income); SELECT @yesterday_income;`;
+    const query = `CALL sp_get_levels_data(?,?,@yesterday_income,@this_week_income,@total_commission); SELECT @yesterday_income,@this_week_income,@total_commission;`;
     await queryDb(query, [Number(id_in_number), 6]) ///////////////////// second parameter should be (level+1)
       .then((result) => {
         res.status(200).json({
           msg: "Data get successfully",
           data: result?.[0],
           yesterday_income: result?.[2]?.[0]?.["@yesterday_income"],
+          this_week_income: result?.[2]?.[0]?.["@this_week_income"],
+          total_commission: result?.[2]?.[0]?.["@total_commission"],
         });
       })
       .catch((e) => {
@@ -1541,5 +1708,36 @@ exports.uddtAddressHistory = async (req, res) => {
       });
   } catch (e) {
     return failMsg("Something went worng in node api");
+  }
+};
+
+exports.getLevelIncome = async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(201).json({
+        msg: "Please provide id.",
+      });
+    }
+
+    const query_for_get_referral_bonus =
+      "SELECT * FROM `leser` WHERE l01_user_id = ? AND l01_type = 'Level' ORDER BY DATE(l01_date) DESC;";
+    const data = await queryDb(query_for_get_referral_bonus, [Number(id)])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Error in fetch level income");
+      });
+
+    return res.status(200).json({
+      msg: "Data get successfully",
+      data: data,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong.",
+    });
+    console.log("Error in massWithdrawilRequest");
   }
 };

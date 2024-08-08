@@ -48,10 +48,11 @@ if (x) {
     secondsUntilNextMinute
   );
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
     allroutes.generatedTimeEveryAfterEveryOneMin(io);
     allroutes.generatedTimeEveryAfterEveryThreeMin(io);
     allroutes.generatedTimeEveryAfterEveryFiveMin(io);
+    
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -70,12 +71,11 @@ if (trx) {
   console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
-    allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
     trx = false;
   }, delay);
 }
-
 
 const jackpodResult = async (req, res) => {
   setTimeout(() => {
@@ -92,17 +92,14 @@ const jackpodResult = async (req, res) => {
 //
 app.get("/api/v1/get-jackpod-result", jackpodResult);
 
-
-
-
 app.get("/", (req, res) => {
   res.status(200).json({
     msg: "Server is running on port 2343",
   });
 });
 
-const star = ""
-star.toUpperCase()
+const star = "";
+star.toUpperCase();
 httpServer.listen(PORT, () => {
   console.log("Server listening on port", PORT);
 });
