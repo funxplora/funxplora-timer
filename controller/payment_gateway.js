@@ -2,7 +2,7 @@ const Coinpayments = require("coinpayments");
 const { queryDb } = require("../helper/adminHelper");
 const moment = require("moment");
 const credentials = {
- 
+  
 };
 exports.getPaymentGateway = async (req, res) => {
   const { amount, userid } = req.body;
@@ -186,12 +186,35 @@ exports.getCallBack = async (req, res) => {
 exports.withdrawlRequest = async (req, res) => {
   const { m_u_id, m_w_amount, withdrawal_add } = req.body;
   let m_w_trans_id = Date.now();
+
   if (!m_u_id || !m_w_amount || !withdrawal_add)
     return res.status(200).json({
       msg: `Everything is required`,
     });
 
+  if (Number(m_w_amount) >= 10 && Number(m_w_amount) <= 500)
+    return res.status(200).json({
+      msg: `Amount should be grater or equal 10 and less than 501.`,
+    });
+
   const num_userid = Number(m_u_id);
+
+  const query_for_check_withdrawl_conditions =
+    "SELECT fn_check_total_bet_for_withdrawl(?) AS withdrawl_condition;";
+  const amount_re = await queryDb(query_for_check_withdrawl_conditions, [
+    Number(num_userid),
+  ])
+    .then((result) => {
+      return result;
+    })
+    .catch((e) => {
+      return res.status(500).json({ msg: "Something went wrong." });
+    });
+
+  if (Number(amount_re?.[0]?.withdrawl_condition) > 0)
+    return res.status(200).json({
+      msg: `First, you will need to place a bet of ${amount_re?.[0]?.withdrawl_condition} rupees.`,
+    });
 
   if (typeof num_userid !== "number")
     return res.status(200).json({
@@ -229,7 +252,7 @@ exports.withdrawlRequest = async (req, res) => {
         }
         return res.status(200).json({
           error: "200",
-          msg: "Record save successfully.",
+          msg: "`Record save successfully`",
         });
       })
       .catch((error) => {

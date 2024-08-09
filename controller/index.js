@@ -1247,7 +1247,7 @@ exports.placeBetTrx = async (req, res) => {
 };
 
 exports.loginPage = async (req, res) => {
-  const { password, username } = req.body;
+  const { password, username ,ipAddress} = req.body;
   if (!password || !username)
     return res.status(200).json({
       msg: `Everything is required`,
@@ -1255,8 +1255,8 @@ exports.loginPage = async (req, res) => {
 
   try {
     // const query = `SELECT id FROM user WHERE (email = ? OR mobile = ?)  AND password = ? AND is_blocked_status = 1;`;
-    const query = `CALL sp_for_login_user(?,?,?,@user_id,@msg); SELECT @user_id,@msg;`;
-    await queryDb(query, [username, username, password])
+    const query = `CALL sp_for_login_user(?,?,?,?,@user_id,@msg); SELECT @user_id,@msg;`;
+    await queryDb(query, [username, username, password,String(ipAddress || "")])
       .then((newresult) => {
         return res.status(200).json({
           msg: newresult?.[1]?.[0]?.["@msg"],
@@ -1272,6 +1272,7 @@ exports.loginPage = async (req, res) => {
     return failMsg("Something went worng in node api");
   }
 };
+
 exports.getBalance = async (req, res) => {
   const { userid } = req.query;
 
@@ -1287,8 +1288,8 @@ exports.getBalance = async (req, res) => {
       msg: `User id should be in number`,
     });
   try {
-    const query = `SELECT cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name FROM user WHERE id = ?;`;
-    await queryDb(query, [Number(num_gameid)])
+    const query = `SELECT cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name,fn_check_total_bet_for_withdrawl(?) AS need_amount_for_withdrawl FROM user WHERE id = ?;`;
+    await queryDb(query, [Number(num_gameid), Number(num_gameid)])
       .then((newresult) => {
         if (newresult?.length === 0) {
           return res.status(200).json({
@@ -1296,6 +1297,7 @@ exports.getBalance = async (req, res) => {
             msg: "Something went wrong",
           });
         }
+
         return res.status(200).json({
           error: "200",
           data: {
@@ -1307,6 +1309,8 @@ exports.getBalance = async (req, res) => {
             email: newresult?.[0]?.email,
             referral_code: newresult?.[0]?.referral_code,
             full_name: newresult?.[0]?.full_name,
+            need_amount_for_withdrawl:
+              newresult?.[0]?.need_amount_for_withdrawl,
           },
         });
       })
@@ -1739,5 +1743,28 @@ exports.getLevelIncome = async (req, res) => {
       msg: "Something went wrong.",
     });
     console.log("Error in massWithdrawilRequest");
+  }
+};
+
+exports.getStatus = async (req, res) => {
+  try {
+    const query = "SELECT * FROM `admin_setting` WHERE id IN (14,15,16)";
+    const result = await queryDb(query, [])
+      ?.then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+    return res.status(200).json({
+      msg: `Data get successfully`,
+      data: result,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
   }
 };

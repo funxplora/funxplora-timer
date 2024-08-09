@@ -48,7 +48,7 @@ if (x) {
     secondsUntilNextMinute
   );
   setTimeout(() => {
-    // allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
+    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
     allroutes.generatedTimeEveryAfterEveryOneMin(io);
     allroutes.generatedTimeEveryAfterEveryThreeMin(io);
     allroutes.generatedTimeEveryAfterEveryFiveMin(io);
@@ -64,15 +64,15 @@ if (trx) {
   const currentMinute = nowIST.minutes();
   const currentSecond = nowIST.seconds();
 
-  const minutesRemaining = 30 - currentMinute - 1;
+  const minutesRemaining = 60 - currentMinute - 1;
   const secondsRemaining = 60 - currentSecond;
 
   const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
   console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
-    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
+    allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
+    allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
     trx = false;
   }, delay);
 }
