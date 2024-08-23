@@ -184,37 +184,15 @@ exports.getCallBack = async (req, res) => {
 };
 
 exports.withdrawlRequest = async (req, res) => {
-  const { m_u_id, m_w_amount, withdrawal_add } = req.body;
+  const { m_u_id, m_w_amount, withdrawal_add, select_wallet } = req.body;
   let m_w_trans_id = Date.now();
 
-  if (!m_u_id || !m_w_amount || !withdrawal_add)
+  if (!m_u_id || !m_w_amount || !withdrawal_add || !select_wallet)
     return res.status(200).json({
       msg: `Everything is required`,
     });
 
-  if (Number(m_w_amount) >= 10 && Number(m_w_amount) <= 500)
-    return res.status(200).json({
-      msg: `Amount should be grater or equal 10 and less than 501.`,
-    });
-
   const num_userid = Number(m_u_id);
-
-  const query_for_check_withdrawl_conditions =
-    "SELECT fn_check_total_bet_for_withdrawl(?) AS withdrawl_condition;";
-  const amount_re = await queryDb(query_for_check_withdrawl_conditions, [
-    Number(num_userid),
-  ])
-    .then((result) => {
-      return result;
-    })
-    .catch((e) => {
-      return res.status(500).json({ msg: "Something went wrong." });
-    });
-
-  if (Number(amount_re?.[0]?.withdrawl_condition) > 0)
-    return res.status(200).json({
-      msg: `First, you will need to place a bet of ${amount_re?.[0]?.withdrawl_condition} rupees.`,
-    });
 
   if (typeof num_userid !== "number")
     return res.status(200).json({
@@ -232,9 +210,43 @@ exports.withdrawlRequest = async (req, res) => {
       console.log("Error in fetching amount in dollar.");
     });
 
+  if (
+    Number(Number(m_w_amount) / Number(amount_in_inr || 92))?.toFixed(4) > 10 &&
+    Number(Number(m_w_amount) / Number(amount_in_inr || 92))?.toFixed(4) < 500
+  )
+    return res.status(200).json({
+      msg: `Amount should be grater or equal 10 and less than 501.`,
+    });
+
+  const query_for_check_withdrawal_condition =
+    "CALL sp_for_withdrawl_request(?,?,?,@result_msg); SELECT @result_msg;";
+  const parameter = [
+    Number(num_userid),
+    Number(m_w_amount)?.toFixed(4),
+    String(select_wallet || "Working Wallet"),
+  ];
+
+  const responseOf = await queryDb(
+    query_for_check_withdrawal_condition,
+    parameter
+  )
+    .then((result) => {
+      return result;
+    })
+    .catch((e) => {
+      return res.status(500).json({
+        msg: "Something went wrong.",
+      });
+    });
+
+  if (responseOf?.[1]?.[0]?.["@result_msg"] !== "1")
+    return res.status(200).json({
+      error: "200",
+      msg: responseOf?.[1]?.[0]?.["@result_msg"],
+    });
   try {
     const query = `INSERT INTO tr12_withdrawal(m_u_id,m_w_amount_inr,m_w_amount,m_w_admin,m_w_tdscharges,withdrawal_add,m_w_trans_id) VALUES(?,?,?,?,?,?,?);`;
-    await queryDb(query, [
+    await queryDb(query, [    
       Number(num_userid),
       Number(m_w_amount),
       Number(Number(m_w_amount) / Number(amount_in_inr || 92))?.toFixed(4),

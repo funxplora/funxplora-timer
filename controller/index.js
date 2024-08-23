@@ -1247,7 +1247,7 @@ exports.placeBetTrx = async (req, res) => {
 };
 
 exports.loginPage = async (req, res) => {
-  const { password, username ,ipAddress} = req.body;
+  const { password, username, ipAddress } = req.body;
   if (!password || !username)
     return res.status(200).json({
       msg: `Everything is required`,
@@ -1256,7 +1256,12 @@ exports.loginPage = async (req, res) => {
   try {
     // const query = `SELECT id FROM user WHERE (email = ? OR mobile = ?)  AND password = ? AND is_blocked_status = 1;`;
     const query = `CALL sp_for_login_user(?,?,?,?,@user_id,@msg); SELECT @user_id,@msg;`;
-    await queryDb(query, [username, username, password,String(ipAddress || "")])
+    await queryDb(query, [
+      username,
+      username,
+      password,
+      String(ipAddress || ""),
+    ])
       .then((newresult) => {
         return res.status(200).json({
           msg: newresult?.[1]?.[0]?.["@msg"],
@@ -1287,9 +1292,10 @@ exports.getBalance = async (req, res) => {
     return res.status(200).json({
       msg: `User id should be in number`,
     });
+  // fn_check_total_bet_for_withdrawl(?)
   try {
-    const query = `SELECT cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name,fn_check_total_bet_for_withdrawl(?) AS need_amount_for_withdrawl FROM user WHERE id = ?;`;
-    await queryDb(query, [Number(num_gameid), Number(num_gameid)])
+    const query = `SELECT transaction_status,working_wallet,cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name,mobile,0 AS need_amount_for_withdrawl FROM user WHERE id = ?;`;
+    await queryDb(query, [Number(num_gameid)])
       .then((newresult) => {
         if (newresult?.length === 0) {
           return res.status(200).json({
@@ -1301,7 +1307,9 @@ exports.getBalance = async (req, res) => {
         return res.status(200).json({
           error: "200",
           data: {
+            transaction_status: newresult?.[0]?.transaction_status,
             cricket_wallet: newresult?.[0]?.cricket_wallet,
+            working_wallet: newresult?.[0]?.working_wallet,
             wallet: newresult?.[0]?.wallet,
             winning: newresult?.[0]?.winning_wallet,
             total_turnover: newresult?.[0]?.today_turnover,
@@ -1311,7 +1319,35 @@ exports.getBalance = async (req, res) => {
             full_name: newresult?.[0]?.full_name,
             need_amount_for_withdrawl:
               newresult?.[0]?.need_amount_for_withdrawl,
+            mob_no: newresult?.[0]?.mobile,
           },
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+exports.getTopWinners = async (req, res) => {
+  try {
+    const query = `SELECT u.email, u.full_name, SUM(IFNULL(t.win,0)) AS win
+      FROM trx_colour_bet AS t
+      RIGHT JOIN user AS u ON u.id = t.userid 
+      WHERE t.win IS NOT NULL 
+  AND t.datetime IS NOT NULL 
+  AND DATE(t.datetime) >= DATE(NOW()) - INTERVAL 3 DAY
+  GROUP BY u.email, u.full_name  
+  ORDER BY SUM(IFNULL(t.win,0)) DESC
+  LIMIT 10;`;
+    await queryDb(query, [])
+      .then((newresult) => {
+        return res.status(200).json({
+          msg: "Data fetched successfully",
+          data: newresult,
         });
       })
       .catch((error) => {
@@ -1657,6 +1693,23 @@ exports.addUSDTAddress = async (req, res) => {
     });
 
   try {
+    const query_for_check_already_exist_address =
+      "SELECT id FROM coin_payment_address_record WHERE userid = ? LIMIT 1;";
+
+    let isAvailable = 0;
+    isAvailable = await queryDb(query_for_check_already_exist_address, [
+      Number(num_userid),
+    ])
+      ?.then((result) => {
+        return result?.[0]?.id;
+      })
+      .catch((e) => {
+        return res.status(500)?.json({ msg: "Something went wrong." });
+      });
+    if (isAvailable !== 0)
+      return res.status(201)?.json({
+        msg: "You have already added usdt address.",
+      });
     const query = `INSERT INTO coin_payment_address_record(userid,usdt_address) VALUES(?,?);`;
     await queryDb(query, [Number(num_userid), String(address)])
       .then((newresult) => {
@@ -1745,6 +1798,156 @@ exports.getLevelIncome = async (req, res) => {
     console.log("Error in massWithdrawilRequest");
   }
 };
+exports.getSelfDepositBonus = async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    if (!user_id) {
+      return res.status(201).json({
+        msg: "Please provide id.",
+      });
+    }
+
+    const query_for_get_referral_bonus =
+      "SELECT * FROM leser WHERE  l01_user_id = ? AND (l01_type = 'Bonus' OR l01_type = 'Self Deposit Bonus') ORDER BY lo1_id DESC;";
+    const data = await queryDb(query_for_get_referral_bonus, [Number(user_id)])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Error in fetch level income");
+      });
+
+    return res.status(200).json({
+      msg: "Data get successfully",
+      data: data,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong.",
+    });
+    console.log("Error in massWithdrawilRequest");
+  }
+};
+exports.getSponsorIncome = async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    if (!user_id) {
+      return res.status(201).json({
+        msg: "Please provide id.",
+      });
+    }
+
+    const query_for_get_referral_bonus =
+      "SELECT * FROM leser WHERE  l01_user_id = ? AND (l01_type = 'Reffral' OR l01_type = 'Sponsor Deposit Bonus') ORDER BY lo1_id DESC;";
+    const data = await queryDb(query_for_get_referral_bonus, [Number(user_id)])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Error in fetch level income");
+      });
+
+    return res.status(200).json({
+      msg: "Data get successfully",
+      data: data,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong.",
+    });
+    console.log("Error in massWithdrawilRequest");
+  }
+};
+exports.needToBet = async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    if (!user_id) {
+      return res.status(201).json({
+        msg: "Please provide id.",
+      });
+    }
+
+    const query_for_get_referral_bonus =
+      "SELECT fn_check_total_bet_for_withdrawl(?) AS amount;";
+    const data = await queryDb(query_for_get_referral_bonus, [Number(user_id)])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Error in fetch level income");
+      });
+
+    return res.status(200).json({
+      msg: "Data get successfully",
+      data: data?.[0]?.amount,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong.",
+    });
+    console.log("Error in massWithdrawilRequest");
+  }
+};
+exports.getDailySalaryIncome = async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(201).json({
+        msg: "Please provide id.",
+      });
+    }
+
+    const query_for_get_referral_bonus =
+      "SELECT * FROM `leser` WHERE l01_user_id = ? AND l01_type = 'Daily Income' ORDER BY DATE(l01_date) DESC;";
+    const data = await queryDb(query_for_get_referral_bonus, [Number(id)])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Error in fetch level income");
+      });
+
+    return res.status(200).json({
+      msg: "Data get successfully",
+      data: data,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong.",
+    });
+    console.log("Error in massWithdrawilRequest");
+  }
+};
+exports.getWeeklySalaryIncome = async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(201).json({
+        msg: "Please provide id.",
+      });
+    }
+
+    const query_for_get_referral_bonus =
+      "SELECT * FROM `leser` WHERE l01_user_id = ? AND l01_type = 'Weekly Bonus' ORDER BY DATE(l01_date) DESC;";
+    const data = await queryDb(query_for_get_referral_bonus, [Number(id)])
+      .then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        console.log("Error in fetch level income");
+      });
+
+    return res.status(200).json({
+      msg: "Data get successfully",
+      data: data,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong.",
+    });
+    console.log("Error in massWithdrawilRequest");
+  }
+};
 
 exports.getStatus = async (req, res) => {
   try {
@@ -1762,6 +1965,151 @@ exports.getStatus = async (req, res) => {
       msg: `Data get successfully`,
       data: result,
     });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
+
+exports.getSubOrdinateData = async (req, res) => {
+  try {
+    const { user_main_id, level_no, in_date } = req.body;
+
+    if (!user_main_id || !String(level_no) || !in_date)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    let actual_level = Number(level_no);
+    if (typeof actual_level !== "number") {
+      return res.status(201).json({
+        msg: `Please provide Valid Level No.`,
+      });
+    }
+
+    const query = "CALL get_all_income_from_team(?,?,?);";
+    const params = [
+      Number(user_main_id),
+      Number(level_no),
+      moment(in_date)?.format("YYYY-MM-DD"),
+    ];
+    const result = await queryDb(query, params)
+      ?.then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+    return res.status(200).json({
+      msg: `Data get successfully`,
+      data: result?.[0],
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
+
+exports.getAllCommission = async (req, res) => {
+  try {
+    const { user_main_id, in_date } = req.body;
+
+    if (!user_main_id || !in_date)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+    const query = "CALL sp_get_commission_details_perday(?,?);";
+    const params = [
+      Number(user_main_id),
+      moment(in_date)?.format("YYYY-MM-DD"),
+    ];
+    const result = await queryDb(query, params)
+      ?.then((result) => {
+        return result;
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+    return res.status(200).json({
+      msg: `Data get successfully`,
+      data: result?.[0],
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
+
+exports.transfer_Amount_to_mainWallet_from_WorkingWallet = async (req, res) => {
+  try {
+    const { userid, amount, password } = req.body;
+
+    if (!userid || !amount || !password)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    if (Number(amount) <= 0)
+      return res.status(201).json({
+        msg: `Please Enter Your Amount.`,
+      });
+
+    const query_for_check_working_wallet =
+      "CALL sp_transfer_amount_working_wallet_to_main_wallet(?,?,?,?,@result_msg); SELECT @result_msg;";
+
+    await queryDb(query_for_check_working_wallet, [
+      Number(amount)?.toFixed(4),
+      Number(userid),
+      String(Date.now()),
+      password,
+    ])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: result?.[1]?.[0]?.["@result_msg"],
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
+exports.get_transfer_history_working_to_main_wallet = async (req, res) => {
+  try {
+    const { userid } = req.query;
+
+    if (!userid)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    const query_for_check_working_wallet =
+      "SELECT * FROM `leser_transfer_wallet` WHERE `l01_user_id` = ?;";
+
+    await queryDb(query_for_check_working_wallet, [Number(userid)])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: "Data seccessfully fount",
+          data: result,
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
   } catch (e) {
     return res.status(500).json({
       msg: `Something went wrong api calling`,
