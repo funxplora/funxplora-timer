@@ -1294,7 +1294,7 @@ exports.getBalance = async (req, res) => {
     });
   // fn_check_total_bet_for_withdrawl(?)
   try {
-    const query = `SELECT transaction_status,working_wallet,cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name,mobile,0 AS need_amount_for_withdrawl FROM user WHERE id = ?;`;
+    const query = `SELECT total_payin,total_payout,transaction_status,working_wallet,cricket_wallet,wallet,winning_wallet,today_turnover,username,email,referral_code,full_name,mobile,0 AS need_amount_for_withdrawl FROM user WHERE id = ?;`;
     await queryDb(query, [Number(num_gameid)])
       .then((newresult) => {
         if (newresult?.length === 0) {
@@ -1320,6 +1320,9 @@ exports.getBalance = async (req, res) => {
             need_amount_for_withdrawl:
               newresult?.[0]?.need_amount_for_withdrawl,
             mob_no: newresult?.[0]?.mobile,
+            total_payin: newresult?.[0]?.total_payin,
+            total_payout: newresult?.[0]?.total_payout,
+
           },
         });
       })
@@ -2097,6 +2100,36 @@ exports.get_transfer_history_working_to_main_wallet = async (req, res) => {
 
     const query_for_check_working_wallet =
       "SELECT * FROM `leser_transfer_wallet` WHERE `l01_user_id` = ?;";
+
+    await queryDb(query_for_check_working_wallet, [Number(userid)])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: "Data seccessfully fount",
+          data: result,
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
+exports.getCashBack = async (req, res) => {
+  try {
+    const { userid } = req.query;
+
+    if (!userid)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    const query_for_check_working_wallet =
+      "SELECT * FROM leser WHERE `l01_user_id` = ? AND `l01_type` = 'Caseback';";
 
     await queryDb(query_for_check_working_wallet, [Number(userid)])
       ?.then((result) => {
