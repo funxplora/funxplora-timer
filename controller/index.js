@@ -22,7 +22,7 @@ exports.generatedTimeEveryAfterEveryOneMin = (io) => {
         ? 60 - currentTime.getSeconds()
         : currentTime.getSeconds();
     io.emit("onemin", timeToSend); // Emit the formatted time
-    if (timeToSend === 9) {
+    if (timeToSend === 6) {
       // oneMinCheckResult();
       // oneMinColorWining();
       clearBetOneMin();
@@ -102,7 +102,7 @@ exports.generatedTimeEveryAfterEveryThreeMin = (io) => {
     io.emit("threemin", `${min}_${timeToSend}`);
     console.log(`${min}_${timeToSend}`);
 
-    if (min === 0 && timeToSend === 25) {
+    if (min === 0 && timeToSend === 6) {
       // oneMinCheckResult2min();
       // oneMinColorWinning2min();
       clearBetThreeMin();
@@ -184,7 +184,7 @@ exports.generatedTimeEveryAfterEveryFiveMin = (io) => {
     io.emit("fivemin", `${min}_${timeToSend}`);
 
     if (
-      timeToSend === 40 && // this is for sec
+      timeToSend === 6 && // this is for sec
       min === 0 // this is for minut
     ) {
       // oneMinCheckResult3sec();
