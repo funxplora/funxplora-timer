@@ -245,10 +245,11 @@ exports.withdrawlRequest = async (req, res) => {
       msg: responseOf?.[1]?.[0]?.["@result_msg"],
     });
   try {
-    const query = `INSERT INTO tr12_withdrawal(m_u_id,m_w_amount_inr,m_w_amount,m_w_admin,m_w_tdscharges,withdrawal_add,m_w_trans_id) VALUES(?,?,?,?,?,?,?);`;
+    const query = `INSERT INTO tr12_withdrawal(m_u_id,m_w_amount_inr,w_wallet_type,m_w_amount,m_w_admin,m_w_tdscharges,withdrawal_add,m_w_trans_id) VALUES(?,?,?,?,?,?,?,?);`;
     await queryDb(query, [    
       Number(num_userid),
       Number(m_w_amount),
+      String(select_wallet || "Working Wallet")==="Working Wallet" ? 2 : 1,
       Number(Number(m_w_amount) / Number(amount_in_inr || 92))?.toFixed(4),
       0,
       0,

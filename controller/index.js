@@ -1709,7 +1709,8 @@ exports.addUSDTAddress = async (req, res) => {
       .catch((e) => {
         return res.status(500)?.json({ msg: "Something went wrong." });
       });
-    if (isAvailable !== 0)
+      console.log(isAvailable);
+    if ((isAvailable || 0) !== 0)
       return res.status(201)?.json({
         msg: "You have already added usdt address.",
       });
