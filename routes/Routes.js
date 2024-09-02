@@ -31,6 +31,7 @@ const {
   getSponsorIncome,
   needToBet,
   getCashBack,
+  getTotalBetAndIncomeYesterday,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -49,6 +50,7 @@ router.post("/trx-bet", placeBetTrx);
 router.get("/getbet-game-results", myHistoryWingo); /// my history
 router.get("/colour_result", gameHistoryWingo); /// game history
 router.post("/bet", placeBetWingo); /// game history
+router.get("/get-total-betA-ad-income-yesterday", getTotalBetAndIncomeYesterday); /// game history
 
 ///////////////////// general api's ////////////////
 router.get("/userwallet",getBalance );

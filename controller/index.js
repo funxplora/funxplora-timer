@@ -2150,3 +2150,34 @@ exports.getCashBack = async (req, res) => {
     });
   }
 };
+
+exports.getTotalBetAndIncomeYesterday = async (req, res) => {
+  try {
+    const { userid } = req.query;
+
+    if (!userid)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    const query_for_check_working_wallet =
+      "SELECT level_1_income,level_2_income,level_3_income,level_4_income,level_5_income,level_6_income,level_1_total_bet,level_2_total_bet,level_3_total_bet,level_4_total_bet,level_5_total_bet,level_6_total_bet FROM user WHERE id = ?;";
+
+    await queryDb(query_for_check_working_wallet, [Number(userid)])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: "Data seccessfully fount",
+          data: result,
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
