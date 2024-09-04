@@ -29,6 +29,7 @@ exports.generatedTimeEveryAfterEveryOneMin = (io) => {
     }
   });
 };
+//////////
 const clearBetOneMin = async () => {
   try {
     ////////////////////// query for get transaction number /////////////////////
@@ -348,12 +349,6 @@ const sendOneMinResultToDatabase = async (time, obj) => {
       console.log(e);
     });
 
-  ////////////// result sent to the  api //////////////
-  // const parameter = {
-  //   number: num,
-  //   gameid: 1,
-  // };
-  // oneMinTrxSendReleasNumber(parameter);
 
   const queryToSendResult = `CALL trx_clear_bet(?);`;
 
