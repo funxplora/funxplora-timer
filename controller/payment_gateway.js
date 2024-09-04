@@ -2,7 +2,7 @@ const Coinpayments = require("coinpayments");
 const { queryDb } = require("../helper/adminHelper");
 const moment = require("moment");
 const credentials = {
- 
+
 };
 exports.getPaymentGateway = async (req, res) => {
   const { amount, userid } = req.body;
