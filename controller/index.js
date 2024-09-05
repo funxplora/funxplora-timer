@@ -349,7 +349,6 @@ const sendOneMinResultToDatabase = async (time, obj) => {
       console.log(e);
     });
 
-
   // const queryToSendResult = `CALL trx_clear_bet(?);`;
 
   // await queryDb(queryToSendResult, [Number(num)])
@@ -453,13 +452,13 @@ async function sendThreeMinResultToDatabase(time, obj) {
   // };
   // oneThreeTrxSendReleasNumber(parameter);
 
-  const queryToSendResult = `CALL trx_clear_bet_3_min(?);`;
+  // const queryToSendResult = `CALL trx_clear_bet_3_min(?);`;
 
-  await queryDb(queryToSendResult, [Number(num)])
-    .then((result) => {})
-    .catch((e) => {
-      console.log("Something went wrong in clear one bet trx");
-    });
+  // await queryDb(queryToSendResult, [Number(num)])
+  //   .then((result) => {})
+  //   .catch((e) => {
+  //     console.log("Something went wrong in clear one bet trx");
+  //   });
 }
 
 exports.generatedTimeEveryAfterEveryFiveMinTRX = (io) => {
@@ -556,13 +555,13 @@ async function sendFiveMinResultToDatabase(time, obj) {
   // };
   // oneFiveTrxSendReleasNumber(parameter);
 
-  const queryToSendResult = `CALL trx_clear_bet_5_min(?);`;
+  // const queryToSendResult = `CALL trx_clear_bet_5_min(?);`;
 
-  await queryDb(queryToSendResult, [Number(num)])
-    .then((result) => {})
-    .catch((e) => {
-      console.log("Something went wrong in clear one bet trx");
-    });
+  // await queryDb(queryToSendResult, [Number(num)])
+  //   .then((result) => {})
+  //   .catch((e) => {
+  //     console.log("Something went wrong in clear one bet trx");
+  //   });
 }
 
 exports.getPromotionData = async (req, res) => {
@@ -1317,7 +1316,6 @@ exports.getBalance = async (req, res) => {
             mob_no: newresult?.[0]?.mobile,
             total_payin: newresult?.[0]?.total_payin,
             total_payout: newresult?.[0]?.total_payout,
-
           },
         });
       })
@@ -1704,7 +1702,7 @@ exports.addUSDTAddress = async (req, res) => {
       .catch((e) => {
         return res.status(500)?.json({ msg: "Something went wrong." });
       });
-      console.log(isAvailable);
+    console.log(isAvailable);
     if ((isAvailable || 0) !== 0)
       return res.status(201)?.json({
         msg: "You have already added usdt address.",
