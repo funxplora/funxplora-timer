@@ -25,7 +25,7 @@ exports.generatedTimeEveryAfterEveryOneMin = (io) => {
     if (timeToSend === 6) {
       // oneMinCheckResult();
       // oneMinColorWining();
-      clearBetOneMin();
+      // clearBetOneMin();
     }
   });
 };
@@ -95,6 +95,7 @@ const clearBetOneMin = async () => {
     return failMsg("Something went worng in node api");
   }
 };
+
 exports.generatedTimeEveryAfterEveryThreeMin = (io) => {
   let min = 2;
   const job = schedule.schedule("* * * * * *", function () {
