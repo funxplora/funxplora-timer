@@ -32,6 +32,7 @@ const {
   needToBet,
   getCashBack,
   getTotalBetAndIncomeYesterday,
+  getMyHistoryTemp,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -44,6 +45,7 @@ router.get("/game-history-jackpod", gameHistoryJackPod);
 ////////// trx ///////////////////
 router.get("/trx-auto-genrated-result", getGameHistory);
 router.get("/trx-getColourBets", getMyHistory);
+router.get("/trx-getColourBets-temp", getMyHistoryTemp);
 router.post("/trx-bet", placeBetTrx);
 
 ////////   wingo api ///////////////////
