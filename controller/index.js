@@ -350,13 +350,13 @@ const sendOneMinResultToDatabase = async (time, obj) => {
     });
 
 
-  const queryToSendResult = `CALL trx_clear_bet(?);`;
+  // const queryToSendResult = `CALL trx_clear_bet(?);`;
 
-  await queryDb(queryToSendResult, [Number(num)])
-    .then((result) => {})
-    .catch((e) => {
-      console.log("Something went wrong in clear one bet trx");
-    });
+  // await queryDb(queryToSendResult, [Number(num)])
+  //   .then((result) => {})
+  //   .catch((e) => {
+  //     console.log("Something went wrong in clear one bet trx");
+  //   });
 };
 
 exports.generatedTimeEveryAfterEveryThreeMinTRX = (io) => {

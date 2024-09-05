@@ -64,7 +64,7 @@ if (trx) {
   const currentSecond = nowIST.seconds();
 
   const minutesRemaining = 30 - currentMinute - 1;
-  const secondsRemaining = 60 - currentSecond;
+  const secondsRemaining = 60 - currentSecond;  
 
   const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
   console.log(minutesRemaining, secondsRemaining, delay);
