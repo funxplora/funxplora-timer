@@ -1167,7 +1167,6 @@ exports.placeBetTrx = async (req, res) => {
       .catch((e) => {
         console.log("Something went wrong in get round.");
       }));
-
   await getAlredyPlacedBet([
     String(Number(get_round_number?.[0]?.tr_tranaction_id) + 1),
     String(userid),

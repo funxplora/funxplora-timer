@@ -6,7 +6,7 @@ var sql = require("../config/db.config");
 module.exports = {
   getAlredyPlacedBet: function (params) {
     let query_string =
-      "SELECT number FROM trx_colour_bet WHERE gamesno = ? AND userid = ? AND gameid = ? AND status = 0;";
+      "SELECT number FROM trx_colour_bet_temp WHERE gamesno = ? AND userid = ? AND gameid = ? AND status = 0;";
     let param = params;
     return new Promise((resolve, reject) => {
       sql.query(query_string, param, (err, result) => {
