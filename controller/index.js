@@ -2143,7 +2143,7 @@ exports.getTotalBetAndIncomeYesterday = async (req, res) => {
       });
 
     const query_for_check_working_wallet =
-      "SELECT level_1_income,level_2_income,level_3_income,level_4_income,level_5_income,level_6_income,level_1_total_bet,level_2_total_bet,level_3_total_bet,level_4_total_bet,level_5_total_bet,level_6_total_bet,yesterday_income,direct_reg,team_reg,direct_depo_mem,team_depo_mem,direct_yest_depo,team_yest_depo,this_week_commission,total_commission FROM user WHERE id = ?;";
+      "SELECT level_1_income,level_2_income,level_3_income,level_4_income,level_5_income,level_6_income,level_1_total_bet,level_2_total_bet,level_3_total_bet,level_4_total_bet,level_5_total_bet,level_6_total_bet,yesterday_income,direct_reg,team_reg,direct_depo_mem,team_depo_mem,direct_yest_depo,team_yest_depo,this_week_commission,total_commission,total_my_deposit_till_yest,total_direct_depo_till_yest,total_my_team_depo_till_this_month,total_my_withdr_till_yest,total_direct_withdr_till_yest,total_my_team_withdr_till_this_month,current_week_team_bet,total_my_salary,salary_achiever_member,my_withdrawal_status FROM user WHERE id = ?;";
 
     await queryDb(query_for_check_working_wallet, [Number(userid)])
       ?.then((result) => {
