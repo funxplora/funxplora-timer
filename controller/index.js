@@ -292,10 +292,18 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
     io.emit("onemintrx", timeToSend);
 
     if (timeToSend === 6) {
-      const datetoAPISend = parseInt(new Date().getTime().toString());
+      // const datetoAPISend = parseInt(new Date().getTime().toString());
+      let timeInKolkata = new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Kolkata",
+      });
+      let timetosend = new Date(timeInKolkata);
+      timetosend.setSeconds(54);
+      timetosend.setMilliseconds(0);
+
+      // Get the updated timestamp
+      let updatedTimestamp = parseInt(timetosend.getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
       const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
-
       setTimeout(async () => {
         const res = await axios
           .get(
@@ -307,8 +315,8 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
                 limit: "20",
                 producer: "",
                 number: "",
-                start_timestamp: datetoAPISend,
-                end_timestamp: datetoAPISend,
+                start_timestamp: updatedTimestamp,
+                end_timestamp: updatedTimestamp,
               },
             },
             {
@@ -339,7 +347,7 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
               )
             );
           });
-      }, [5000]);
+      }, [4000]);
     }
   });
 };
