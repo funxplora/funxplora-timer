@@ -100,7 +100,6 @@ exports.generatedTimeEveryAfterEveryThreeMin = (io) => {
     const currentTime = new Date().getSeconds(); // Get the current time
     const timeToSend = currentTime > 0 ? 60 - currentTime : currentTime;
     io.emit("threemin", `${min}_${timeToSend}`);
-    console.log(`${min}_${timeToSend}`);
 
     if (min === 0 && timeToSend === 6) {
       clearBetThreeMinResult();
@@ -340,7 +339,7 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
               )
             );
           });
-      }, [4000]);
+      }, [5000]);
     }
   });
 };
@@ -535,7 +534,7 @@ exports.generatedTimeEveryAfterEveryFiveMinTRX = (io) => {
               )
             );
           });
-      }, [4000]);
+      }, [5000]);
     }
     if (currentTime === 0) {
       min--;
@@ -840,7 +839,6 @@ exports.generatedTimeEveryAfterEveryFiveMinTRXJackPod = (io) => {
             String(Number(trans_id) + 1),
           ])
             .then((result) => {
-              console.log(result);
               const result_arrray = [2002, 1000, 3002, 3001, 2001, 2005, 2004];
               let result_number =
                 result?.[0]?.result ||
@@ -950,7 +948,6 @@ exports.gameHistoryJackPod = async (req, res) => {
 };
 exports.chnagePassWord = async (req, res) => {
   const { userid, old_pass, new_pass, confirm_new_pass } = req.body;
-  console.log(userid, old_pass, new_pass, confirm_new_pass);
   if (!userid || !old_pass || !new_pass || !confirm_new_pass)
     return res.status(401).json({
       msg: "Everything is requied!",
@@ -1691,7 +1688,6 @@ exports.addUSDTAddress = async (req, res) => {
       .catch((e) => {
         return res.status(500)?.json({ msg: "Something went wrong." });
       });
-    console.log(isAvailable);
     if ((isAvailable || 0) !== 0)
       return res.status(201)?.json({
         msg: "You have already added usdt address.",
