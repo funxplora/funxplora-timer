@@ -46,12 +46,13 @@ if (x) {
     moment(new Date()).format("HH:mm:ss"),
     secondsUntilNextMinute
   );
+  // allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
+  // allroutes.generatedTimeEveryAfterEveryOneMin(io);
+  // allroutes.generatedTimeEveryAfterEveryThreeMin(io);
+  // allroutes.generatedTimeEveryAfterEveryFiveMin(io);
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
     allroutes.generatedTimeEveryAfterEveryOneMin(io);
-    allroutes.generatedTimeEveryAfterEveryThreeMin(io);
-    allroutes.generatedTimeEveryAfterEveryFiveMin(io);
-    
+    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -64,14 +65,14 @@ if (trx) {
   const currentSecond = nowIST.seconds();
 
   const minutesRemaining = 60 - currentMinute - 1;
-  const secondsRemaining = 60 - currentSecond;  
+  const secondsRemaining = 60 - currentSecond;
 
   const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
   console.log(minutesRemaining, secondsRemaining, delay);
 
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
-    allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
     trx = false;
   }, delay);
 }
