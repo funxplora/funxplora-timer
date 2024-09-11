@@ -293,10 +293,10 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
 
     if (timeToSend === 6) {
       // const datetoAPISend = parseInt(new Date().getTime().toString());
-      let timeInKolkata = new Date().toLocaleString("en-US", {
-        timeZone: "Asia/Kolkata",
-      });
-      let timetosend = new Date(timeInKolkata);
+      // let timeInKolkata = new Date().toLocaleString("en-US", {
+      //   timeZone: "Asia/Kolkata",
+      // });
+      let timetosend = new Date();
       timetosend.setSeconds(54);
       timetosend.setMilliseconds(0);
 
