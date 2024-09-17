@@ -292,15 +292,10 @@ exports.generatedTimeEveryAfterEveryOneMinTRX = (io) => {
     io.emit("onemintrx", timeToSend);
 
     if (timeToSend === 6) {
-      // const datetoAPISend = parseInt(new Date().getTime().toString());
-      // let timeInKolkata = new Date().toLocaleString("en-US", {
-      //   timeZone: "Asia/Kolkata",
-      // });
       let timetosend = new Date();
       timetosend.setSeconds(54);
       timetosend.setMilliseconds(0);
 
-      // Get the updated timestamp
       let updatedTimestamp = parseInt(timetosend.getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
       const time = actualtome.add(5, "hours").add(30, "minutes").valueOf();
