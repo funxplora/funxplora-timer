@@ -75,7 +75,6 @@ if (trx) {
     trx = false;
   }, delay);
 }
-////////////////////////
 const jackpodResult = async (req, res) => {
   setTimeout(() => {
     try {
