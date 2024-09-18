@@ -817,8 +817,8 @@ exports.betPlaceJackPod = async (req, res) => {
 exports.generatedTimeEveryAfterEveryFiveMinTRXJackPod = (io) => {
   let min = 4;
   let sec = 60;
-  // let jackpodTrxJob = schedule.schedule("* * * * * *", async function () {
-  let interval = setInterval(async () => {
+  let jackpodTrxJob = schedule.schedule("* * * * * *", async function () {
+    // let interval = setInterval(async () => {
     const currentTime = sec;
     sec = sec - 1;
     if (sec < 0) {
@@ -894,13 +894,15 @@ exports.generatedTimeEveryAfterEveryFiveMinTRXJackPod = (io) => {
       min--;
       if (min < 0) {
         clearInterval(interval);
-        // jackpodTrxJob?.cancel();
+        jackpodTrxJob?.cancel();
+        jackpodTrxJob?.cancel();
+        jackpodTrxJob?.cancel();
         min = 0;
         sec = 0;
       } // Reset min to 4 when it reaches 0
     }
-  }, 1000);
-  // });
+    // }, 1000);
+  });
 };
 
 // exports.jackpodResult = async (req, res) => {
