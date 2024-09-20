@@ -33,6 +33,7 @@ const {
   getCashBack,
   getTotalBetAndIncomeYesterday,
   getMyHistoryTemp,
+  startJackPod,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -41,6 +42,7 @@ const router = express.Router();
 router.post("/place-bid-jackpod", betPlaceJackPod);
 router.get("/my-history-jackpod", myHistoryJackPod);
 router.get("/game-history-jackpod", gameHistoryJackPod);
+router.get("/get-jackpod-result", startJackPod);
 
 ////////// trx ///////////////////
 router.get("/trx-auto-genrated-result", getGameHistory);

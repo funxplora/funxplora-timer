@@ -937,14 +937,12 @@ exports.myHistoryJackPod = async (req, res) => {
     });
 };
 
-exports.gameHistoryJackPod = async (req, res) => {
-  const query =
-    "SELECT * FROM tr42_win_slot WHERE  tr41_packtype = ? ORDER BY tr_transaction_id DESC LIMIT 200;";
-  await queryDb(query, [4])
+exports.startJackPod = async (req, res) => {
+  const query = "UPDATE `admin_setting` SET `longtext` = 1 WHERE id = 17;";
+  await queryDb(query, [])
     .then((result) => {
       return res.status(200).json({
-        msg: "Recorf get successfully",
-        data: result,
+        msg: "Record get successfully",
       });
     })
     .catch((e) => {

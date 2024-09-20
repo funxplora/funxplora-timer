@@ -10,6 +10,14 @@ const allroutes = require("./controller/index");
 const moment = require("moment");
 const soment = require("moment-timezone");
 const allRoutes = require("./routes/Routes");
+const {
+  queryDb,
+  randomStr,
+  getTransactionidForJackPod,
+  jackPodClearBet,
+  updateMediatorTableJackPod,
+} = require("./helper/adminHelper");
+const schedule = require("node-cron");
 
 const io = new Server(httpServer, {
   cors: {
@@ -51,8 +59,8 @@ if (x) {
   // allroutes.generatedTimeEveryAfterEveryThreeMin(io);
   // allroutes.generatedTimeEveryAfterEveryFiveMin(io);
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
-    allroutes.generatedTimeEveryAfterEveryOneMin(io);
+    // allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
+    // allroutes.generatedTimeEveryAfterEveryOneMin(io);
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -77,7 +85,7 @@ if (trx) {
 }
 
 const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
-  let min = 4;
+  let min = 0;
   let sec = 60;
   let jackpodTrxJob = schedule.schedule("* * * * * *", async function () {
     // let interval = setInterval(async () => {
@@ -88,6 +96,7 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
     }
     const timeToSend = sec;
     io.emit("fivemintrxjackpod", `${min}_${timeToSend}`);
+    console.log(`${min}_${timeToSend}`);
     if (min === 0 && timeToSend === 6) {
       const datetoAPISend = parseInt(new Date().getTime().toString());
       const actualtome = soment.tz("Asia/Kolkata");
@@ -167,26 +176,26 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
   });
 };
 const jackpodResult = async (req, res) => {
-  setTimeout(() => {
-    try {
-      generatedTimeEveryAfterEveryFiveMinTRXJackPod();
-      return res.status(200)?.json({
-        msg: "APi hit successfully",
-      });
-    } catch (e) {
-      console.log("error in end point function", e);
-    }
-  }, 2000);
+  // setTimeout(() => {
+  try {
+    generatedTimeEveryAfterEveryFiveMinTRXJackPod();
+    return res.status(200)?.json({
+      msg: "APi hit successfully",
+    });
+  } catch (e) {
+    console.log("error in end point function", e);
+  }
+  // }, 2000);
 };
 //
-app.get("/api/v1/get-jackpod-result", jackpodResult);
+// app.get("/api/v1/get-jackpod-result", jackpodResult);
 
 app.get("/", (req, res) => {
   res.status(200).json({
     msg: "Server is running on port 2343",
   });
 });
-///
+
 httpServer.listen(PORT, () => {
   console.log("Server listening on port", PORT);
 });
