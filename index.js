@@ -59,8 +59,8 @@ if (x) {
   // allroutes.generatedTimeEveryAfterEveryThreeMin(io);
   // allroutes.generatedTimeEveryAfterEveryFiveMin(io);
   setTimeout(() => {
-    // allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
-    // allroutes.generatedTimeEveryAfterEveryOneMin(io);
+    allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
+    allroutes.generatedTimeEveryAfterEveryOneMin(io);
     x = false;
   }, secondsUntilNextMinute * 1000);
 }
@@ -189,7 +189,7 @@ const jackpodResult = async (req, res) => {
 };
 //
 // app.get("/api/v1/get-jackpod-result", jackpodResult);
-
+/////////
 app.get("/", (req, res) => {
   res.status(200).json({
     msg: "Server is running on port 2343",
