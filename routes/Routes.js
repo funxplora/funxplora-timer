@@ -3,7 +3,6 @@ const {
   getPromotionData,
   betPlaceJackPod,
   myHistoryJackPod,
-  gameHistoryJackPod,
   chnagePassWord,
   getGameHistory,
   getMyHistory,
@@ -34,6 +33,7 @@ const {
   getTotalBetAndIncomeYesterday,
   getMyHistoryTemp,
   startJackPod,
+  gameHistoryJackPod,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
