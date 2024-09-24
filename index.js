@@ -189,7 +189,7 @@ const jackpodResult = async (req, res) => {
 };
 //
 // app.get("/api/v1/get-jackpod-result", jackpodResult);
-
+/////////////
 app.get("/", (req, res) => {
   res.status(200).json({
     msg: "Server is running on port 2343",
