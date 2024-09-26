@@ -34,6 +34,8 @@ const {
   getMyHistoryTemp,
   startJackPod,
   gameHistoryJackPod,
+  addFundUser,
+  getUserId,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -84,6 +86,8 @@ router.post("/get-commisssion-data-funx", getAllCommission);
 router.post("/transfer-amount-from-working-wallet-to-main-wallet", transfer_Amount_to_mainWallet_from_WorkingWallet);
 router.get("/transfer-history-from-working-wallet-to-main-wallet", get_transfer_history_working_to_main_wallet);
 router.get("/getCashBack-report", getCashBack);
+router.post("/fn_add_fun_to_user", addFundUser);
+router.post("/get-user-id", getUserId);
 
 
 module.exports = router;

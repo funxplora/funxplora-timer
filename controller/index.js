@@ -2176,3 +2176,66 @@ exports.getTotalBetAndIncomeYesterday = async (req, res) => {
     });
   }
 };
+
+exports.addFundUser = async (req, res) => {
+  try {
+    const { user_id, amount } = req.body;
+
+    if (!user_id || !amount)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    const query_for_check_working_wallet =
+      "SELECT fn_add_fun_to_user(?,?) AS msg;";
+
+    await queryDb(query_for_check_working_wallet, [
+      Number(user_id),
+      Number(amount || 0),
+    ])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: result?.[0]?.msg,
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
+
+exports.getUserId = async (req, res) => {
+  try {
+    const { mobile_no } = req.body;
+
+    if (!mobile_no)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    const query_for_check_working_wallet =
+      "SELECT `id`,`wallet`,`winning_wallet`,`working_wallet` FROM `user` WHERE `mobile` = ? LIMIT 1;";
+
+    await queryDb(query_for_check_working_wallet, [String(mobile_no)])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: result?.[0],
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
