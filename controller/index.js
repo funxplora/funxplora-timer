@@ -2209,6 +2209,35 @@ exports.addFundUser = async (req, res) => {
     });
   }
 };
+exports.changeUserPassword = async (req, res) => {
+  try {
+    const { user_id, pass } = req.body;
+
+    if (!user_id || !pass)
+      return res.status(201).json({
+        msg: `Please provide everything`,
+      });
+
+    const query_for_check_working_wallet =
+      "UPDATE user SET password = ? WHERE id = ?;";
+
+    await queryDb(query_for_check_working_wallet, [pass, Number(user_id)])
+      ?.then((result) => {
+        return res.status(200).json({
+          msg: "Password updated successfully.",
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: `Something went wrong api calling`,
+    });
+  }
+};
 
 exports.getUserId = async (req, res) => {
   try {
@@ -2220,7 +2249,7 @@ exports.getUserId = async (req, res) => {
       });
 
     const query_for_check_working_wallet =
-      "SELECT `id`,`wallet`,`winning_wallet`,`working_wallet` FROM `user` WHERE `mobile` = ? LIMIT 1;";
+      "SELECT `id`,`wallet`,`winning_wallet`,`working_wallet`,`full_name`,password FROM `user` WHERE `mobile` = ? LIMIT 1;";
 
     await queryDb(query_for_check_working_wallet, [String(mobile_no)])
       ?.then((result) => {
