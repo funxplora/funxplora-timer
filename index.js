@@ -176,7 +176,7 @@ const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
     // }, 1000);
   });
 };
-
+//////////////
 const jackpodResult = async (req, res) => {
   // setTimeout(() => {
   try {
