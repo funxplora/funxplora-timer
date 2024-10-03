@@ -37,6 +37,8 @@ const {
   addFundUser,
   getUserId,
   changeUserPassword,
+  ticketRaised,
+  getTicketRaisedHistory,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -90,6 +92,8 @@ router.get("/getCashBack-report", getCashBack);
 router.post("/fn_add_fun_to_user", addFundUser);
 router.post("/get-user-id", getUserId);
 router.post("/change-user-pass", changeUserPassword);
+router.post("/ticket-raised", ticketRaised);
+router.get("/ticket-raised-history", getTicketRaisedHistory);
 
 
 module.exports = router;

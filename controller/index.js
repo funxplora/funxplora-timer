@@ -2268,3 +2268,120 @@ exports.getUserId = async (req, res) => {
     });
   }
 };
+
+exports.ticketRaised = async (req, res) => {
+  const { user_id, files, type, description } = req.body;
+
+  // Define maximum file size in bytes (e.g., 2MB)
+  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+  // Function to calculate file size from base64 string
+  const calculateBase64Size = (base64String) => {
+    const padding = (base64String.match(/=*$/) || [""])[0].length; // Get the padding length
+    const sizeInBytes = (base64String.length * 3) / 4 - padding;
+    return sizeInBytes;
+  };
+
+  // Check if user_id is provided and valid
+  if (!user_id || !type || !description) {
+    return res.status(400).json({
+      msg: `User ID is required`,
+    });
+  }
+
+  if (Number(user_id) <= 0) {
+    return res.status(400).json({
+      msg: `Invalid User ID. Please refresh your page`,
+    });
+  }
+
+  const id = Number(user_id);
+
+  if (isNaN(id)) {
+    return res.status(400).json({
+      msg: `User ID must be a number`,
+    });
+  }
+
+  // Validate the file size
+  if (files) {
+    const fileSize = calculateBase64Size(files.split(",")[1]); // Split the base64 data to get the actual data part
+    if (fileSize > MAX_FILE_SIZE) {
+      return res.status(400).json({
+        msg: `File size exceeds the limit of ${
+          MAX_FILE_SIZE / (1024 * 1024)
+        } MB`,
+      });
+    }
+  } else {
+    return res.status(400).json({
+      msg: "File data is required",
+    });
+  }
+
+  try {
+    const query =
+      "INSERT INTO ticket_raised_table(`userid`,ticket_id,`ticket_type`,description,`file_name`) VALUES(?,?,?,?,?);";
+    await queryDb(query, [
+      id,
+      Date.now(),
+      Number(type || 1),
+      description || "",
+      files,
+    ])
+      .then((result) => {
+        return res.status(200).json({
+          msg: "Data saved successfully",
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: "Something went wrong while saving data.",
+        });
+      });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Something went wrong in the node API",
+    });
+  }
+};
+
+exports.getTicketRaisedHistory = async (req, res) => {
+  const { user_id } = req.query;
+
+  if (!user_id) {
+    return res.status(400).json({
+      msg: `User ID is required`,
+    });
+  }
+
+  if (Number(user_id) <= 0) {
+    return res.status(400).json({
+      msg: `Invalid User ID. Please refresh your page`,
+    });
+  }
+
+  const id = Number(user_id);
+
+  if (isNaN(id)) {
+    return res.status(400).json({
+      msg: `User ID must be a number`,
+    });
+  }
+
+  try {
+    const query =
+      "SELECT * FROM `ticket_raised_table` WHERE userid = ? ORDER BY id DESC;";
+    const results = await queryDb(query, id);
+
+    return res.status(200).json({
+      msg: "Data retrieved successfully",
+      data: results,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went wrong in the node API",
+    });
+  }
+};
