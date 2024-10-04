@@ -35,9 +35,8 @@ const PORT = process.env.PORT || 2000;
 app.use(cors(corsOptions));
 
 app.use(cors(corsOptions)); // Apply CORS middleware
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); 
-
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 app.use("/api/v1", allRoutes);
 io.on("connection", (socket) => {});
