@@ -39,6 +39,8 @@ const {
   changeUserPassword,
   ticketRaised,
   getTicketRaisedHistory,
+  getTicketRaisedHistoryAdmin,
+  updateTicketIssue,
 } = require("../controller");
 const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
 const router = express.Router();
@@ -94,6 +96,8 @@ router.post("/get-user-id", getUserId);
 router.post("/change-user-pass", changeUserPassword);
 router.post("/ticket-raised", ticketRaised);
 router.get("/ticket-raised-history", getTicketRaisedHistory);
+router.get("/ticket-raised-history-admin", getTicketRaisedHistoryAdmin);
+router.post("/ticket-resolve-history-admin", updateTicketIssue);
 
 
 module.exports = router;

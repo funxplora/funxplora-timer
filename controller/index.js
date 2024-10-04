@@ -2249,9 +2249,12 @@ exports.getUserId = async (req, res) => {
       });
 
     const query_for_check_working_wallet =
-      "SELECT `id`,`wallet`,`winning_wallet`,`working_wallet`,`full_name`,password FROM `user` WHERE `mobile` = ? LIMIT 1;";
+      "SELECT * FROM `user` WHERE (`mobile` = ? OR `username` = ?) LIMIT 1;";
 
-    await queryDb(query_for_check_working_wallet, [String(mobile_no)])
+    await queryDb(query_for_check_working_wallet, [
+      String(mobile_no),
+      String(mobile_no),
+    ])
       ?.then((result) => {
         return res.status(200).json({
           msg: result?.[0],
@@ -2373,6 +2376,46 @@ exports.getTicketRaisedHistory = async (req, res) => {
     const query =
       "SELECT * FROM `ticket_raised_table` WHERE userid = ? ORDER BY id DESC;";
     const results = await queryDb(query, id);
+
+    return res.status(200).json({
+      msg: "Data retrieved successfully",
+      data: results,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went wrong in the node API",
+    });
+  }
+};
+exports.getTicketRaisedHistoryAdmin = async (req, res) => {
+  try {
+    const query =
+      "SELECT t.*,u.`username`,u.`mobile`,u.`full_name` FROM `ticket_raised_table` AS t LEFT JOIN `user` AS u ON u.`id` = t.`userid` ORDER BY t.`id` DESC;";
+    const results = await queryDb(query);
+
+    return res.status(200).json({
+      msg: "Data retrieved successfully",
+      data: results,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went wrong in the node API",
+    });
+  }
+};
+exports.updateTicketIssue = async (req, res) => {
+  const { t_id, dis } = req.body;
+  if (!t_id || !dis) {
+    return res.status(400).json({
+      msg: `Everuything is required`,
+    });
+  }
+  try {
+    const query =
+      "UPDATE `ticket_raised_table` SET `resolution` = ? , `resolution_date` = NOW(),`status` = 1 WHERE `id` = ?;";
+    const results = await queryDb(query, [dis || "", Number(t_id)]);
 
     return res.status(200).json({
       msg: "Data retrieved successfully",
