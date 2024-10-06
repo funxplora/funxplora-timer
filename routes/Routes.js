@@ -41,8 +41,22 @@ const {
   getTicketRaisedHistory,
   getTicketRaisedHistoryAdmin,
   updateTicketIssue,
+  payInRequest,
+  getAdminQrAddress,
+  usdtPayinRequest,
+  payInRequestApproval,
+  payInRequestReject,
+  usdtPayOutRequestAdmin,
+  payOutRequestApproval,
+  payOutRequestReject,
 } = require("../controller");
-const { getPaymentGateway, getCallBack, withdrawlRequest, withdrawlCallBack, update_member_withdrawal_gatway } = require("../controller/payment_gateway");
+const {
+  getPaymentGateway,
+  getCallBack,
+  withdrawlRequest,
+  withdrawlCallBack,
+  update_member_withdrawal_gatway,
+} = require("../controller/payment_gateway");
 const router = express.Router();
 
 ////////////////// jack pot ///////////////////
@@ -61,11 +75,14 @@ router.post("/trx-bet", placeBetTrx);
 router.get("/getbet-game-results", myHistoryWingo); /// my history
 router.get("/colour_result", gameHistoryWingo); /// game history
 router.post("/bet", placeBetWingo); /// game history
-router.get("/get-total-betA-ad-income-yesterday", getTotalBetAndIncomeYesterday); /// game history
+router.get(
+  "/get-total-betA-ad-income-yesterday",
+  getTotalBetAndIncomeYesterday
+); /// game history
 
 ///////////////////// general api's ////////////////
-router.get("/userwallet",getBalance );
-router.get("/get-top-winners",getTopWinners);
+router.get("/userwallet", getBalance);
+router.get("/get-top-winners", getTopWinners);
 router.post("/user_login", loginPage);
 router.post("/change-password", chnagePassWord);
 router.get("/promotiondata", getPromotionData);
@@ -88,8 +105,14 @@ router.get("/weekly-salary-icome", getWeeklySalaryIncome);
 router.get("/get-status", getStatus);
 router.post("/get-subordinate-data-funx", getSubOrdinateData);
 router.post("/get-commisssion-data-funx", getAllCommission);
-router.post("/transfer-amount-from-working-wallet-to-main-wallet", transfer_Amount_to_mainWallet_from_WorkingWallet);
-router.get("/transfer-history-from-working-wallet-to-main-wallet", get_transfer_history_working_to_main_wallet);
+router.post(
+  "/transfer-amount-from-working-wallet-to-main-wallet",
+  transfer_Amount_to_mainWallet_from_WorkingWallet
+);
+router.get(
+  "/transfer-history-from-working-wallet-to-main-wallet",
+  get_transfer_history_working_to_main_wallet
+);
 router.get("/getCashBack-report", getCashBack);
 router.post("/fn_add_fun_to_user", addFundUser);
 router.post("/get-user-id", getUserId);
@@ -99,5 +122,16 @@ router.get("/ticket-raised-history", getTicketRaisedHistory);
 router.get("/ticket-raised-history-admin", getTicketRaisedHistoryAdmin);
 router.post("/ticket-resolve-history-admin", updateTicketIssue);
 
+// usdt manual
+router.get("/admin-qr-address", getAdminQrAddress);
+// router.post("/payout-request", payOutRequest);
+router.post("/payin-request", payInRequest);
+router.get("/usdt-payin-requst-admin", usdtPayinRequest);
+router.get("/payin-request-approve", payInRequestApproval);
+router.get("/payin-request-reject", payInRequestReject);
+
+router.get("/usdt-payout-request-admin", usdtPayOutRequestAdmin);
+router.get("/payout-request-approve", payOutRequestApproval);
+router.get("/payout-request-reject", payOutRequestReject);
 
 module.exports = router;

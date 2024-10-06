@@ -1573,7 +1573,7 @@ exports.getDepositlHistory = async (req, res) => {
       msg: `User id should be in number`,
     });
   try {
-    const query = `SELECT user_id,to_coin,amt,order_id,status,created_at,success_date FROM m05_fund_gateway WHERE user_id = ?;`;
+    const query = `SELECT user_id,to_coin,amt,order_id,status,created_at,success_date FROM m05_fund_gateway WHERE user_id = ? ORDER BY id DESC;`;
     await queryDb(query, [Number(num_userid)])
       .then((newresult) => {
         if (newresult?.length === 0) {
@@ -1636,8 +1636,8 @@ exports.getWithdrawlHistory = async (req, res) => {
 };
 
 exports.addUSDTAddress = async (req, res) => {
-  const { m_u_id, address } = req.body;
-  if (!m_u_id || !address)
+  const { m_u_id, address, coin_type } = req.body;
+  if (!m_u_id || !address || !coin_type)
     return res.status(200).json({
       msg: `Everything is required`,
     });
@@ -1651,11 +1651,12 @@ exports.addUSDTAddress = async (req, res) => {
 
   try {
     const query_for_check_already_exist_address =
-      "SELECT id FROM coin_payment_address_record WHERE userid = ? LIMIT 1;";
+      "SELECT id FROM coin_payment_address_record WHERE userid = ?,coin_type = ? LIMIT 1;";
 
     let isAvailable = 0;
     isAvailable = await queryDb(query_for_check_already_exist_address, [
       Number(num_userid),
+      Number(coin_type || 1),
     ])
       ?.then((result) => {
         return result?.[0]?.id;
@@ -1667,8 +1668,12 @@ exports.addUSDTAddress = async (req, res) => {
       return res.status(201)?.json({
         msg: "You have already added usdt address.",
       });
-    const query = `INSERT INTO coin_payment_address_record(userid,usdt_address) VALUES(?,?);`;
-    await queryDb(query, [Number(num_userid), String(address)])
+    const query = `INSERT INTO coin_payment_address_record(userid,usdt_address,coin_type) VALUES(?,?,?);`;
+    await queryDb(query, [
+      Number(num_userid),
+      String(address),
+      Number(coin_type || 1),
+    ])
       .then((newresult) => {
         if (newresult?.length === 0) {
           return res.status(200).json({
@@ -2383,6 +2388,252 @@ exports.updateTicketIssue = async (req, res) => {
     console.log(e);
     return res.status(500).json({
       msg: "Something went wrong in the node API",
+    });
+  }
+};
+
+exports.payInRequest = async (req, res) => {
+  // const userid = req.userid;
+  const {
+    userid,
+    req_amount,
+    utr_no,
+    deposit_type,
+    bank_upi_table_id,
+    receipt_image,
+  } = req.body;
+  if (
+    !userid ||
+    !req_amount ||
+    !utr_no ||
+    !deposit_type ||
+    !bank_upi_table_id ||
+    !receipt_image
+  )
+    return res.status(201)?.json({
+      msg: "Everything is required.",
+    });
+  try {
+    const query =
+      "CALL sp_manual_fund_request(?,?,?,?,?,?,?,?,?,@res_msg); SELECT @res_msg;";
+    await queryDb(query, [
+      1,
+      Number(userid),
+      Number(req_amount || 0),
+      utr_no,
+      Number(deposit_type),
+      Number(bank_upi_table_id),
+      1,
+      receipt_image,
+      "",
+    ])
+      .then((result) => {
+        return res.status(200).json({
+          msg: result?.[1]?.[0]?.["@res_msg"],
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: "Something went wrong in the node API",
+        });
+      });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went worng in node api",
+    });
+  }
+};
+
+exports.getAdminQrAddress = async (req, res) => {
+  try {
+    const query = "SELECT * FROM `admin_usdt_address`;";
+    const results = await queryDb(query, []);
+
+    return res.status(200).json({
+      msg: "Data retrieved successfully",
+      data: results,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went wrong in the node API",
+    });
+  }
+};
+
+exports.usdtPayinRequest = async (req, res) => {
+  try {
+    const { type } = req.query;
+    const query =
+      "SELECT m.*,u.`full_name`,u.`username`,u.`mobile` FROM `m05_fund_gateway` AS m LEFT JOIN `user` AS u ON u.id = m.`user_id` WHERE m.`status` = ? ORDER BY m.id DESC;";
+    await queryDb(query, [Number(type) || 1])
+      .then((newresult) => {
+        return res.status(200).json({
+          error: "200",
+          msg: "Record saved successfully.",
+          data: newresult,
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+exports.payInRequestApproval = async (req, res) => {
+  // const userid = req.userid;
+  const { t_id } = req.query;
+
+  try {
+    const query =
+      "CALL sp_manual_fund_request(?,?,?,?,?,?,?,?,?,@res_msg); SELECT @res_msg;";
+    await queryDb(query, [2, 123, 123, "34ahlskjf", 1, 123, t_id, "", ""])
+      .then((result) => {
+        return res.status(200).json({
+          msg: result?.[1]?.[0]?.["@res_msg"],
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: "Something went wrong in the node API",
+        });
+      });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went worng in node api",
+    });
+  }
+};
+exports.payInRequestReject = async (req, res) => {
+  // const userid = req.userid;
+  const { t_id } = req.query;
+
+  try {
+    const query =
+      "CALL sp_manual_fund_request(?,?,?,?,?,?,?,?,?,@res_msg); SELECT @res_msg;";
+    await queryDb(query, [3, 123, 123, "34ahlskjf", 1, 123, t_id, "", ""])
+      .then((result) => {
+        return res.status(200).json({
+          msg: result?.[1]?.[0]?.["@res_msg"],
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: "Something went wrong in the node API",
+        });
+      });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went worng in node api",
+    });
+  }
+};
+
+////////// payout
+exports.usdtPayOutRequestAdmin = async (req, res) => {
+  try {
+    const { type } = req.query;
+    const query =
+      "SELECT w.*,u.`full_name`,u.`mobile`,u.`username` FROM `tr12_withdrawal` AS w LEFT JOIN `user` AS u ON u.`id` = w.`m_u_id` WHERE w.`m_w_status` = ? ORDER BY w.`w_id` DESC;";
+    await queryDb(query, [Number(type) || 1])
+      .then((newresult) => {
+        return res.status(200).json({
+          error: "200",
+          msg: "Record saved successfully.",
+          data: newresult,
+        });
+      })
+      .catch((error) => {
+        return res.status(500).json({
+          msg: `Something went wrong api calling`,
+        });
+      });
+  } catch (e) {
+    return failMsg("Something went worng in node api");
+  }
+};
+
+exports.payOutRequestApproval = async (req, res) => {
+  // const userid = req.userid;
+  const { t_id } = req.query;
+
+  try {
+    const query =
+      "UPDATE `tr12_withdrawal` SET `m_w_status` = 2 , `m_w_crypto_status` = 2, `success_date` = NOW(),`m_w_approvedate` = NOW() WHERE `w_id` = ?;";
+    await queryDb(query, [Number(t_id)])
+      .then((result) => {
+        return res.status(200).json({
+          msg: "Approval Request Accepted successfully",
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: "Something went wrong in the node API",
+        });
+      });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went worng in node api",
+    });
+  }
+};
+
+exports.payOutRequestReject = async (req, res) => {
+  // const userid = req.userid;
+  const { t_id } = req.query;
+
+  try {
+    const query =
+      "UPDATE `tr12_withdrawal` SET `m_w_status` = 3 WHERE `w_id` = ?;";
+    await queryDb(query, [Number(t_id)])
+      .then((result) => {
+        return res.status(200).json({
+          msg: "Request Rejected Successfully.",
+        });
+      })
+      .catch((e) => {
+        return res.status(500).json({
+          msg: "Something went wrong in the node API",
+        });
+      });
+    const query_for_cashback =
+      "SELECT m_w_amount_inr,m_u_id,w_wallet_type FROM  `tr12_withdrawal` WHERE `w_id` = ?;";
+    const response = await queryDb(query_for_cashback, [Number(t_id)]);
+    const insert_in_leser =
+      "INSERT INTO leser(`l01_user_id`,`l01_type`,`l01_transection_type`,`l01_amount`,`l01_status`) VALUES(?,?,?,?,?);";
+    await queryDb(insert_in_leser, [
+      Number(response?.[0]?.m_u_id),
+      "Caseback",
+      "USDT Cashback Get Successfully.",
+      Number(response?.[0]?.m_w_amount_inr || 0),
+      1,
+    ]);
+    if (response?.[0]?.w_wallet_type === "Main Wallet") {
+      const insert_in_user =
+        "UPDATE user SET winning_wallet = IFNULL(winning_wallet,0)+? WHERE id = ?";
+      await queryDb(insert_in_user, [
+        Number(response?.[0]?.m_w_amount_inr || 0),
+        Number(response?.[0]?.m_u_id),
+      ]);
+    } else {
+      const insert_in_user =
+        "UPDATE user SET working_wallet = IFNULL(working_wallet,0)+? WHERE id = ?";
+      await queryDb(insert_in_user, [
+        Number(response?.[0]?.m_w_amount_inr || 0),
+        Number(response?.[0]?.m_u_id),
+      ]);
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      msg: "Something went worng in node api",
     });
   }
 };
