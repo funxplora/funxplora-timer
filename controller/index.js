@@ -22,9 +22,9 @@ exports.generatedTimeEveryAfterEveryOneMin = (io) => {
         ? 60 - currentTime.getSeconds()
         : currentTime.getSeconds();
     io.emit("onemin", timeToSend); // Emit the formatted time
-    // if (timeToSend === 2) {
-    //   clearBetOneMin();
-    // }
+    if (timeToSend === 2) {
+      clearBetOneMin();
+    }
   });
 };
 //////////
@@ -44,7 +44,7 @@ const clearBetOneMin = async () => {
     );
     await queryDb("CALL wingo_insert_ledger_entry_one_min(?);", [
       Number(
-        res?.data?.data?.list[0]?.number || Math.floor(Math.random() * 10)
+        res?.data?.data?.list[0]?.number || -1
       ),
     ]);
   } catch (e) {
