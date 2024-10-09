@@ -22,9 +22,14 @@ exports.generatedTimeEveryAfterEveryOneMin = (io) => {
         ? 60 - currentTime.getSeconds()
         : currentTime.getSeconds();
     io.emit("onemin", timeToSend); // Emit the formatted time
-    if (timeToSend === 2) {
-      clearBetOneMin();
-    }
+    // if (timeToSend === 2) {
+    //   clearBetOneMin();
+    // }
+  });
+};
+exports.generatedTimeEveryAfterEveryOneMinbyCrown = () => {
+  schedule.schedule("58 * * * * *", function () {
+    clearBetOneMin();
   });
 };
 //////////
