@@ -42,10 +42,8 @@ const clearBetOneMin = async () => {
         typeId: 1,
       }
     );
-    await queryDb("CALL wingo_insert_ledger_entry_one_min(?);", [
-      Number(
-        res?.data?.data?.list[0]?.number || -1
-      ),
+    await queryDb("CALL insert_result_1_min_wingo(?);", [
+      Number(res?.data?.data?.list[0]?.number || -1),
     ]);
   } catch (e) {
     return failMsg("Something went worng in node api");
