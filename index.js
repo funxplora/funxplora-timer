@@ -59,7 +59,7 @@ if (x) {
   // allroutes.generatedTimeEveryAfterEveryThreeMin(io);
   // allroutes.generatedTimeEveryAfterEveryFiveMin(io);
   setTimeout(() => {
-    allroutes.generatedTimeEveryAfterEveryOneMinbyCrown();
+    // allroutes.generatedTimeEveryAfterEveryOneMinbyCrown();
     allroutes.generatedTimeEveryAfterEveryOneMinTRX(io);
     allroutes.generatedTimeEveryAfterEveryOneMin(io);
     x = false;
