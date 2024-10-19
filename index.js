@@ -66,25 +66,6 @@ if (x) {
   }, secondsUntilNextMinute * 1000);
 }
 
-if (trx) {
-  const now = new Date();
-  const nowIST = soment(now).tz("Asia/Kolkata");
-
-  const currentMinute = nowIST.minutes();
-  const currentSecond = nowIST.seconds();
-
-  const minutesRemaining = 60 - currentMinute - 1;
-  const secondsRemaining = 60 - currentSecond;
-
-  const delay = (minutesRemaining * 60 + secondsRemaining) * 1000;
-  console.log(minutesRemaining, secondsRemaining, delay);
-
-  setTimeout(() => {
-    // allroutes.generatedTimeEveryAfterEveryThreeMinTRX(io);
-    // allroutes.generatedTimeEveryAfterEveryFiveMinTRX(io);
-    trx = false;
-  }, delay);
-}
 
 const generatedTimeEveryAfterEveryFiveMinTRXJackPod = () => {
   let min = 0;
