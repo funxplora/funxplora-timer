@@ -170,7 +170,7 @@ const jackpodResult = async (req, res) => {
   }
   // }, 2000);
 };
-//
+
 // app.get("/api/v1/get-jackpod-result", jackpodResult);
 app.get("/", (req, res) => {
   res.status(200).json({
